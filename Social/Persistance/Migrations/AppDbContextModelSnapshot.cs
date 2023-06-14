@@ -8,7 +8,7 @@ using Persistance.DataContext;
 
 #nullable disable
 
-namespace Persistance.DataContext.Migrations
+namespace Persistance.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -21,6 +21,102 @@ namespace Persistance.DataContext.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("Domain.Entities.AppUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsBlock")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Surname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
 
             modelBuilder.Entity("Domain.Entities.Comment", b =>
                 {
@@ -41,16 +137,12 @@ namespace Persistance.DataContext.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
-                    b.Property<int>("TopCommentId")
+                    b.Property<int?>("TopCommentId")
                         .HasColumnType("int");
 
                     b.Property<string>("UpdatedBy")
@@ -68,7 +160,7 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comment");
                 });
 
             modelBuilder.Entity("Domain.Entities.Image", b =>
@@ -79,39 +171,41 @@ namespace Persistance.DataContext.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("ImageName")
+                    b.Property<int?>("AppUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImgName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsBacroundImage")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsProfileImage")
                         .HasColumnType("bit");
 
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AppUserId");
+
                     b.HasIndex("PostId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Images");
+                    b.ToTable("Image");
                 });
 
             modelBuilder.Entity("Domain.Entities.Like", b =>
@@ -174,14 +268,10 @@ namespace Persistance.DataContext.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -270,10 +360,10 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Stories");
+                    b.ToTable("Story");
                 });
 
-            modelBuilder.Entity("Domain.Entities.User", b =>
+            modelBuilder.Entity("Domain.Entities.UserImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -281,94 +371,42 @@ namespace Persistance.DataContext.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
+                    b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Bio")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("BirthDate")
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
+                    b.Property<string>("ImageName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("EmailConfirmed")
+                    b.Property<bool>("IsActived")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsBlock")
+                    b.Property<bool>("IsBacroundImage")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
+                    b.Property<bool>("IsProfileImage")
                         .HasColumnType("bit");
 
-                    b.Property<string>("SecurityStamp")
+                    b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Surname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("UserImage");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -478,11 +516,9 @@ namespace Persistance.DataContext.Migrations
                 {
                     b.HasOne("Domain.Entities.Comment", "TopComment")
                         .WithMany("ReplyComments")
-                        .HasForeignKey("TopCommentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("TopCommentId");
 
-                    b.HasOne("Domain.Entities.User", "User")
+                    b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Comments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -495,21 +531,17 @@ namespace Persistance.DataContext.Migrations
 
             modelBuilder.Entity("Domain.Entities.Image", b =>
                 {
+                    b.HasOne("Domain.Entities.AppUser", null)
+                        .WithMany("Images")
+                        .HasForeignKey("AppUserId");
+
                     b.HasOne("Domain.Entities.Post", "Post")
                         .WithMany("Images")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("Images")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Post");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Like", b =>
@@ -517,10 +549,10 @@ namespace Persistance.DataContext.Migrations
                     b.HasOne("Domain.Entities.Post", "Post")
                         .WithMany("Likes")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.User", "User")
+                    b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -533,7 +565,7 @@ namespace Persistance.DataContext.Migrations
 
             modelBuilder.Entity("Domain.Entities.Post", b =>
                 {
-                    b.HasOne("Domain.Entities.User", "User")
+                    b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Posts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -544,8 +576,19 @@ namespace Persistance.DataContext.Migrations
 
             modelBuilder.Entity("Domain.Entities.Story", b =>
                 {
-                    b.HasOne("Domain.Entities.User", "User")
+                    b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Stories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.UserImage", b =>
+                {
+                    b.HasOne("Domain.Entities.AppUser", "User")
+                        .WithMany("UserImages")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -564,7 +607,7 @@ namespace Persistance.DataContext.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("Domain.Entities.User", null)
+                    b.HasOne("Domain.Entities.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -573,7 +616,7 @@ namespace Persistance.DataContext.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("Domain.Entities.User", null)
+                    b.HasOne("Domain.Entities.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -588,7 +631,7 @@ namespace Persistance.DataContext.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.User", null)
+                    b.HasOne("Domain.Entities.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -597,11 +640,24 @@ namespace Persistance.DataContext.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("Domain.Entities.User", null)
+                    b.HasOne("Domain.Entities.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.AppUser", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Images");
+
+                    b.Navigation("Posts");
+
+                    b.Navigation("Stories");
+
+                    b.Navigation("UserImages");
                 });
 
             modelBuilder.Entity("Domain.Entities.Comment", b =>
@@ -614,17 +670,6 @@ namespace Persistance.DataContext.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("Likes");
-                });
-
-            modelBuilder.Entity("Domain.Entities.User", b =>
-                {
-                    b.Navigation("Comments");
-
-                    b.Navigation("Images");
-
-                    b.Navigation("Posts");
-
-                    b.Navigation("Stories");
                 });
 #pragma warning restore 612, 618
         }

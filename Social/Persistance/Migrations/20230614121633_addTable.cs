@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Persistance.DataContext.Migrations
+namespace Persistance.Migrations
 {
-    public partial class SocialDb : Migration
+    public partial class addTable : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -32,7 +32,7 @@ namespace Persistance.DataContext.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Surname = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Bio = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
@@ -165,16 +165,16 @@ namespace Persistance.DataContext.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Comments",
+                name: "Comment",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    TopCommentId = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    IsActived = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    TopCommentId = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    IsActived = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -182,19 +182,18 @@ namespace Persistance.DataContext.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.PrimaryKey("PK_Comment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Comments_AspNetUsers_UserId",
+                        name: "FK_Comment_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Comments_Comments_TopCommentId",
+                        name: "FK_Comment_Comment_TopCommentId",
                         column: x => x.TopCommentId,
-                        principalTable: "Comments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalTable: "Comment",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -205,8 +204,8 @@ namespace Persistance.DataContext.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    IsActived = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    IsActived = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -224,7 +223,7 @@ namespace Persistance.DataContext.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Stories",
+                name: "Story",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -241,9 +240,9 @@ namespace Persistance.DataContext.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Stories", x => x.Id);
+                    table.PrimaryKey("PK_Story", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Stories_AspNetUsers_UserId",
+                        name: "FK_Story_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -251,7 +250,7 @@ namespace Persistance.DataContext.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Images",
+                name: "UserImage",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -259,22 +258,51 @@ namespace Persistance.DataContext.Migrations
                     ImageName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsProfileImage = table.Column<bool>(type: "bit", nullable: false),
                     IsBacroundImage = table.Column<bool>(type: "bit", nullable: false),
-                    PostId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    IsActived = table.Column<bool>(type: "bit", nullable: false, defaultValue: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    IsActived = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Images", x => x.Id);
+                    table.PrimaryKey("PK_UserImage", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Images_AspNetUsers_UserId",
+                        name: "FK_UserImage_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Image",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ImgName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    AppUserId = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    IsActived = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Image", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Images_Posts_PostId",
+                        name: "FK_Image_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Image_Posts_PostId",
                         column: x => x.PostId,
                         principalTable: "Posts",
                         principalColumn: "Id",
@@ -310,7 +338,7 @@ namespace Persistance.DataContext.Migrations
                         column: x => x.PostId,
                         principalTable: "Posts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -353,24 +381,24 @@ namespace Persistance.DataContext.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_TopCommentId",
-                table: "Comments",
+                name: "IX_Comment_TopCommentId",
+                table: "Comment",
                 column: "TopCommentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_UserId",
-                table: "Comments",
+                name: "IX_Comment_UserId",
+                table: "Comment",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Images_PostId",
-                table: "Images",
+                name: "IX_Image_AppUserId",
+                table: "Image",
+                column: "AppUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Image_PostId",
+                table: "Image",
                 column: "PostId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Images_UserId",
-                table: "Images",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Likes_PostId",
@@ -388,8 +416,13 @@ namespace Persistance.DataContext.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Stories_UserId",
-                table: "Stories",
+                name: "IX_Story_UserId",
+                table: "Story",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserImage_UserId",
+                table: "UserImage",
                 column: "UserId");
         }
 
@@ -411,16 +444,19 @@ namespace Persistance.DataContext.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Comments");
+                name: "Comment");
 
             migrationBuilder.DropTable(
-                name: "Images");
+                name: "Image");
 
             migrationBuilder.DropTable(
                 name: "Likes");
 
             migrationBuilder.DropTable(
-                name: "Stories");
+                name: "Story");
+
+            migrationBuilder.DropTable(
+                name: "UserImage");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

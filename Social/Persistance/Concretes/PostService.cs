@@ -15,7 +15,7 @@ public class PostService : IPostService
 
     public async Task<PostGetDto> CreateAsync(PostCreateDto post)
     {
-        User? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == post.UserId)
+        AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == post.UserId)
         ?? throw new NotfoundException("User Not Found");
         //dbcontext interceptor
         Post newPost = new Post()

@@ -11,7 +11,7 @@ public class Post : BaseAuditable
 
     public string Content { get; set; } = null!;
     public int UserId { get; set; }
-    public User User { get; set; } = null!;
+    public AppUser User { get; set; } = null!;
     public ICollection<Like> Likes { get; set; }
     public ICollection<Image> Images { get; set; }
 
