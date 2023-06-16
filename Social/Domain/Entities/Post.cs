@@ -12,6 +12,7 @@ public class Post : BaseAuditable
     public string Content { get; set; } = null!;
     public int UserId { get; set; }
     public AppUser User { get; set; } = null!;
+    public string? ImageName { get; set; }
     public ICollection<Like> Likes { get; set; }
     public ICollection<Image> Images { get; set; }
 

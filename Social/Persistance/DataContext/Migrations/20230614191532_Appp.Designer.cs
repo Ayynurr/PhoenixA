@@ -3,17 +3,19 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.DataContext;
 
 #nullable disable
 
-namespace Persistance.Migrations
+namespace Persistance.DataContext.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230614191532_Appp")]
+    partial class Appp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,7 +162,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comment");
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("Domain.Entities.Image", b =>
@@ -205,7 +207,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Image");
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("Domain.Entities.Like", b =>
@@ -360,7 +362,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Story");
+                    b.ToTable("Stories");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserImage", b =>
@@ -406,7 +408,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserImage");
+                    b.ToTable("UserImages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -549,7 +551,7 @@ namespace Persistance.Migrations
                     b.HasOne("Domain.Entities.Post", "Post")
                         .WithMany("Likes")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.AppUser", "User")

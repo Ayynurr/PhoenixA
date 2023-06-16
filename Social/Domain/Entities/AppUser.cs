@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Reflection;
 
@@ -10,7 +11,8 @@ public class AppUser : IdentityUser<int>
     public string Surname { get; set; } = null!;
     public bool IsDeleted { get; set; }
     public DateTime BirthDate { get; set; } //backround service 
-    public string Bio { get; set; }
+    public string? Bio { get; set; }
+    [EnumDataType(typeof(Gender))]
     public Gender Gender { get; set; }
     public string Address { get; set; }
     public bool IsBlock { get; set; }

@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Persistance.Migrations
+namespace Persistance.DataContext.Migrations
 {
-    public partial class addTable : Migration
+    public partial class Appp : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -165,7 +165,7 @@ namespace Persistance.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Comment",
+                name: "Comments",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -182,17 +182,17 @@ namespace Persistance.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comment", x => x.Id);
+                    table.PrimaryKey("PK_Comments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Comment_AspNetUsers_UserId",
+                        name: "FK_Comments_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Comment_Comment_TopCommentId",
+                        name: "FK_Comments_Comments_TopCommentId",
                         column: x => x.TopCommentId,
-                        principalTable: "Comment",
+                        principalTable: "Comments",
                         principalColumn: "Id");
                 });
 
@@ -223,7 +223,7 @@ namespace Persistance.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Story",
+                name: "Stories",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -240,9 +240,9 @@ namespace Persistance.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Story", x => x.Id);
+                    table.PrimaryKey("PK_Stories", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Story_AspNetUsers_UserId",
+                        name: "FK_Stories_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -250,7 +250,7 @@ namespace Persistance.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserImage",
+                name: "UserImages",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -268,9 +268,9 @@ namespace Persistance.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserImage", x => x.Id);
+                    table.PrimaryKey("PK_UserImages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserImage_AspNetUsers_UserId",
+                        name: "FK_UserImages_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -278,7 +278,7 @@ namespace Persistance.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Image",
+                name: "Images",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -295,14 +295,14 @@ namespace Persistance.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Image", x => x.Id);
+                    table.PrimaryKey("PK_Images", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Image_AspNetUsers_AppUserId",
+                        name: "FK_Images_AspNetUsers_AppUserId",
                         column: x => x.AppUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Image_Posts_PostId",
+                        name: "FK_Images_Posts_PostId",
                         column: x => x.PostId,
                         principalTable: "Posts",
                         principalColumn: "Id",
@@ -338,7 +338,7 @@ namespace Persistance.Migrations
                         column: x => x.PostId,
                         principalTable: "Posts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -381,23 +381,23 @@ namespace Persistance.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comment_TopCommentId",
-                table: "Comment",
+                name: "IX_Comments_TopCommentId",
+                table: "Comments",
                 column: "TopCommentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comment_UserId",
-                table: "Comment",
+                name: "IX_Comments_UserId",
+                table: "Comments",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Image_AppUserId",
-                table: "Image",
+                name: "IX_Images_AppUserId",
+                table: "Images",
                 column: "AppUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Image_PostId",
-                table: "Image",
+                name: "IX_Images_PostId",
+                table: "Images",
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
@@ -416,13 +416,13 @@ namespace Persistance.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Story_UserId",
-                table: "Story",
+                name: "IX_Stories_UserId",
+                table: "Stories",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserImage_UserId",
-                table: "UserImage",
+                name: "IX_UserImages_UserId",
+                table: "UserImages",
                 column: "UserId");
         }
 
@@ -444,19 +444,19 @@ namespace Persistance.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Comment");
+                name: "Comments");
 
             migrationBuilder.DropTable(
-                name: "Image");
+                name: "Images");
 
             migrationBuilder.DropTable(
                 name: "Likes");
 
             migrationBuilder.DropTable(
-                name: "Story");
+                name: "Stories");
 
             migrationBuilder.DropTable(
-                name: "UserImage");
+                name: "UserImages");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

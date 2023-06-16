@@ -2,8 +2,8 @@
 
 public enum Gender
 {
-    Masculine,
-    Feminine,
-    Neuter,
-    Common
+    Masculine=0,
+    Feminine=1,
+    Neuter=2,
+    Common=3
 }

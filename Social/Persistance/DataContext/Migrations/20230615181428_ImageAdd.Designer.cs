@@ -9,11 +9,11 @@ using Persistance.DataContext;
 
 #nullable disable
 
-namespace Persistance.Migrations
+namespace Persistance.DataContext.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230614121633_addTable")]
-    partial class addTable
+    [Migration("20230615181428_ImageAdd")]
+    partial class ImageAdd
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -40,7 +40,6 @@ namespace Persistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Bio")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("BirthDate")
@@ -64,7 +63,9 @@ namespace Persistance.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -139,10 +140,14 @@ namespace Persistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActived")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<int?>("TopCommentId")
                         .HasColumnType("int");
@@ -162,7 +167,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comment");
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("Domain.Entities.Image", b =>
@@ -207,7 +212,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Image");
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("Domain.Entities.Like", b =>
@@ -269,11 +274,18 @@ namespace Persistance.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ImageName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActived")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -362,7 +374,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Story");
+                    b.ToTable("Stories");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserImage", b =>
@@ -408,7 +420,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserImage");
+                    b.ToTable("UserImages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -518,7 +530,8 @@ namespace Persistance.Migrations
                 {
                     b.HasOne("Domain.Entities.Comment", "TopComment")
                         .WithMany("ReplyComments")
-                        .HasForeignKey("TopCommentId");
+                        .HasForeignKey("TopCommentId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Comments")
@@ -551,7 +564,7 @@ namespace Persistance.Migrations
                     b.HasOne("Domain.Entities.Post", "Post")
                         .WithMany("Likes")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.AppUser", "User")

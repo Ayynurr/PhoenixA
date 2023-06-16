@@ -1,7 +1,12 @@
-﻿namespace Application.DTOs;
+﻿using Domain.Entities;
+using Domain.Entities.Base;
+using Microsoft.AspNetCore.Http;
 
-public class PostGetDto
+namespace Application.DTOs;
+
+public class PostGetDto 
 {
     public int Id { get; set; }
     public string Content { get; set; } = null!;
+    public ICollection<Image> Images { get; set; }
 }

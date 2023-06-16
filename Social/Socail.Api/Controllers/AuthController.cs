@@ -14,7 +14,6 @@ namespace Socail.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
 public class AuthController : ControllerBase
 {
     readonly UserManager<AppUser> _userManager;
@@ -28,7 +27,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto register)
     {
-        AppUser user = new AppUser
+        AppUser user = new()
         {
             Name = register.Firstname,
             Surname = register.Lastname,
@@ -43,7 +42,11 @@ public class AuthController : ControllerBase
         {
             return BadRequest(result.Errors);
         }
-        return Ok(new { status = "Success", message = "Confirmation email sent" });
+        return Ok(new
+        {
+            user.Name,
+            user.Email
+        });
 
     }
     [HttpPost("login")]
@@ -59,10 +62,10 @@ public class AuthController : ControllerBase
         }
         List<Claim> claims = new()
         {
-            new Claim(ClaimTypes.Name,user.UserName),
+            new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
             new Claim(ClaimTypes.Email,user.Email)
         };
-        string privateKey = _configuration["SecurityKey"];
+        string privateKey = _configuration["JWT:SecurityKey"];
         SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(privateKey));
         SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
         //token generate
@@ -71,7 +74,7 @@ public class AuthController : ControllerBase
             issuer: _configuration["JWT:audience"],
             audience: _configuration["JWT:issuer"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(45),
+            expires: DateTime.Now.AddDays(100),
             signingCredentials: signingCredentials
 
             );
