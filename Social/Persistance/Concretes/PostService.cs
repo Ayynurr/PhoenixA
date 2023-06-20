@@ -31,6 +31,7 @@ public class PostService : IPostService
         {
             UserId = (int)loginId,
             Content = post.Content,
+            CreatedDate = DateTime.Now,
         };
         if (post.Images != null)
         {
@@ -44,7 +45,7 @@ public class PostService : IPostService
                 newPost.ImageName = newFileName;
             }
 
-            #region Lazimsiz
+            #region 
             //{
             //    AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == post.UserId)
             //    ?? throw new NotfoundException("User Not Found");
@@ -75,9 +76,9 @@ public class PostService : IPostService
             #endregion
         }
 
-         _dbcontext.Posts.Add(newPost);
+        _dbcontext.Posts.Add(newPost);
         await _dbcontext.SaveChangesAsync();
-        return new PostGetDto() { Content = newPost.Content, Id = newPost.Id ,};
+        return new PostGetDto() { Content = newPost.Content, Id = newPost.Id, };
 
     }
 
@@ -129,19 +130,20 @@ public class PostService : IPostService
             if (!file.CheckFileType("image/"))
                 throw new FileSizeException();
             string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "Images");
-        Image newImage = new()
-        {
-            ImgName = newFileName,
-            PostId = postId,
-            Path = Path.Combine(_hostEnvironment.WebRootPath, "Images")
-        };
-        newPost.Images.Add(newImage);
-        updateImages.Add(new ImageGetDto
-        {
-            ImageName = newImage.ImgName,
-            PostId = postId,
-            Url = $"https://localhost:7275/api/Post/Images/{newPost.ImageName}"
-        });
+            Image newImage = new()
+            {
+                ImgName = newFileName,
+                PostId = postId,
+                Path = Path.Combine(_hostEnvironment.WebRootPath, "Images"),
+                UpdatedDate = DateTime.Now
+            };
+            newPost.Images.Add(newImage);
+            updateImages.Add(new ImageGetDto
+            {
+                ImageName = newImage.ImgName,
+                PostId = postId,
+                Url = $"https://localhost:7275/api/Post/Images/{newPost.ImageName}"
+            });
         }
         await _dbcontext.SaveChangesAsync();
         return updateImages;
@@ -149,7 +151,7 @@ public class PostService : IPostService
         ///COUNTRY
     }
 
-   
+
 }
 
 

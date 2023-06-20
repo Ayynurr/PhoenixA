@@ -3,6 +3,7 @@ using Application.DTOs;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Persistance.DataContext;
@@ -23,7 +24,6 @@ public class CommentService : ICommentService
         Comment? comment = await _dbcontext.Comments.FindAsync(id) ?? throw new NotfoundException();
          _dbcontext.Comments.Remove(comment);
         await _dbcontext.SaveChangesAsync();
-
     }
 
     public async Task<CommentGetDto> CreateAsync(CommentCreateDto commentDto)
@@ -36,12 +36,19 @@ public class CommentService : ICommentService
         {
             Content = commentDto.Content,
             UserId = (int)loginId,
+            CreatedDate = DateTime.UtcNow,
+            CreatedBy = user.Name
         };
 
-        //if (commentDto.TopCommentId.HasValue)
-        //{
-        //    newComment.TopComment = await _dbcontext.Comments.FindAsync(commentDto.TopCommentId.Value);
-        //}
+        if (commentDto.ReplyCommentId.HasValue)
+        {
+            Comment? topComment = await _dbcontext.Comments.FindAsync(commentDto.ReplyCommentId.Value);
+            if (topComment != null)
+            {
+                newComment.TopComment = topComment;
+            }
+        }
+
 
         _dbcontext.Comments.Add(newComment);
         await _dbcontext.SaveChangesAsync();
@@ -63,7 +70,9 @@ public class CommentService : ICommentService
 
         return new CommentGetDto { };
     }
+   
+
 }
 
-   
+
 

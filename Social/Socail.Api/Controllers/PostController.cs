@@ -72,12 +72,14 @@ public class PostController : ControllerBase
                 ex.Message
             });
         }
-       // Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == id);
-       // if (post == null)
-       // {
-       //     return NotFound();
-       // }
-       //return StatusCode(StatusCodes.Status200OK, post);
+        #region 
+        // Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == id);
+        // if (post == null)
+        // {
+        //     return NotFound();
+        // }
+        //return StatusCode(StatusCodes.Status200OK, post);
+        #endregion
     }
 
     [HttpGet("Images/{ImageName}")]

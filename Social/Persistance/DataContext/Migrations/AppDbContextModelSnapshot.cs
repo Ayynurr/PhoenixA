@@ -147,6 +147,9 @@ namespace Persistance.DataContext.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<int>("Likes")
+                        .HasColumnType("int");
+
                     b.Property<int?>("TopCommentId")
                         .HasColumnType("int");
 
