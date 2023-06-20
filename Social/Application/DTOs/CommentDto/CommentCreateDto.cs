@@ -1,7 +1,9 @@
-﻿namespace Application.DTOs;
+﻿using Domain.Entities;
+
+namespace Application.DTOs;
 
 public class CommentCreateDto
 {
-    public string Content { get; set; } = null!;
-    public int UserId { get; set; }
+    public string Content { get; set; }
+    public int PostId { get; set; }
 }

@@ -1,11 +1,9 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
+using Application.DTOs.ImagePostDto;
+using Application.DTOs.PostDto;
 using Domain.Exceptions;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Server.IIS.Core;
 using Persistance.DataContext;
 using Persistance.Extentions;
 
@@ -46,7 +44,7 @@ public class PostService : IPostService
                 newPost.ImageName = newFileName;
             }
 
-
+            #region Lazimsiz
             //{
             //    AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == post.UserId)
             //    ?? throw new NotfoundException("User Not Found");
@@ -74,14 +72,15 @@ public class PostService : IPostService
 
             //        }
             //    }
-
+            #endregion
         }
 
-        await _dbcontext.Posts.AddAsync(newPost);
+         _dbcontext.Posts.Add(newPost);
         await _dbcontext.SaveChangesAsync();
-        return new PostGetDto() { Content = newPost.Content, Id = newPost.Id };
+        return new PostGetDto() { Content = newPost.Content, Id = newPost.Id ,};
 
     }
+
     public async Task<PostGetDto> GetByIdAsync(int id)
     {
         Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == id) ??
@@ -95,13 +94,64 @@ public class PostService : IPostService
         List<Post>? posts = await _dbcontext.Posts.ToListAsync() ?? throw new NotfoundException();
         List<PostGetDto> postDtos = posts.Select(p => new PostGetDto
         {
+            Id = p.Id,
             Content = p.Content,
-            Images = (ICollection<Image>)p.Images.Select(i => i.ImgName).ToList()
         }).ToList();
 
         return new PostGetDto { };
 
     }
+    public async Task<PostGetDto> UpdateAsync(PostUpdateDto post, int id)
+    {
+        Post? newPost = await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == id) ??
+           throw new NotfoundException();
+        newPost.Content = post.Content;
+        newPost.Id = id;
+        await _dbcontext.SaveChangesAsync();
+        return new PostGetDto
+        {
+            Id = newPost.Id,
+            Content = newPost.Content,
+        };
 
+    }
+    public async Task<List<ImageGetDto>> UpdateImagesAsync(UpdateImageDto updateImage, int postId)
+    {
+        Post? newPost = await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == postId) ??
+          throw new NotfoundException();
+        newPost.Images ??= new List<Image>();
+        List<ImageGetDto> updateImages = new();
 
+        foreach (var file in updateImage.Images)
+        {
+            if (file.CheckFileSize(2048))
+                throw new FileTypeException();
+            if (!file.CheckFileType("image/"))
+                throw new FileSizeException();
+            string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "Images");
+        Image newImage = new()
+        {
+            ImgName = newFileName,
+            PostId = postId,
+            Path = Path.Combine(_hostEnvironment.WebRootPath, "Images")
+        };
+        newPost.Images.Add(newImage);
+        updateImages.Add(new ImageGetDto
+        {
+            ImageName = newImage.ImgName,
+            PostId = postId,
+            Url = $"https://localhost:7275/api/Post/Images/{newPost.ImageName}"
+        });
+        }
+        await _dbcontext.SaveChangesAsync();
+        return updateImages;
+
+        ///COUNTRY
+    }
+
+   
 }
+
+
+
+

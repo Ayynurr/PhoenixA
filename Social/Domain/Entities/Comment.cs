@@ -9,7 +9,6 @@ public class Comment : BaseAuditable
     public string Content { get; set; } = null!;
     public AppUser User { get; set; } = null!;
     public int UserId { get; set; }
-    [ForeignKey("TopCommentId")]
     public Comment? TopComment { get; set; } 
     public int? TopCommentId { get; set; }
     public ICollection<Comment> ReplyComments { get; set; }
