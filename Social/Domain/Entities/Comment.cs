@@ -12,7 +12,7 @@ public class Comment : BaseAuditable
     public Comment? TopComment { get; set; } 
     public int? TopCommentId { get; set; }
     public ICollection<Comment> ReplyComments { get; set; }
-    public int Likes { get; set; }
+    public ICollection<Like> Likes { get; set; }
 
 
 }

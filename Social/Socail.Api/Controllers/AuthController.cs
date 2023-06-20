@@ -15,10 +15,12 @@ public class AuthController : ControllerBase
 {
     readonly UserManager<AppUser> _userManager;
     readonly IConfiguration _configuration;
-    public AuthController(UserManager<AppUser> userManager, IConfiguration confifuration)
+    readonly RoleManager<IdentityRole> _roleManager;
+    public AuthController(UserManager<AppUser> userManager, IConfiguration confifuration, RoleManager<IdentityRole> roleManager)
     {
         _userManager = userManager;
         _configuration = confifuration;
+        _roleManager = roleManager;
     }
 
     [HttpPost("register")]
@@ -39,6 +41,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest(result.Errors);
         }
+        await _userManager.AddToRoleAsync(user, Roles.User.ToString());
         return Ok(new
         {
             user.Name,
@@ -79,7 +82,20 @@ public class AuthController : ControllerBase
         {
             Token = new JwtSecurityTokenHandler().WriteToken(token),
         });
-
+    }
+    [HttpPost("createRoles")]
+    public async Task CreateRoles()
+    {
+        foreach (var item in Enum.GetValues(typeof(Roles)))
+        {
+            if (!(await _roleManager.RoleExistsAsync(item.ToString())))
+            {
+                await _roleManager.CreateAsync(new IdentityRole
+                {
+                    Name = item.ToString()
+                });
+            }
+        }
     }
 
 }

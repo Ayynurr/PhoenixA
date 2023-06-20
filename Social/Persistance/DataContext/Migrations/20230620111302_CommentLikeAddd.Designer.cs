@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.DataContext;
 
@@ -11,9 +12,10 @@ using Persistance.DataContext;
 namespace Persistance.DataContext.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230620111302_CommentLikeAddd")]
+    partial class CommentLikeAddd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,6 +148,9 @@ namespace Persistance.DataContext.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<int>("Likes")
+                        .HasColumnType("int");
 
                     b.Property<int?>("TopCommentId")
                         .HasColumnType("int");
@@ -600,7 +605,7 @@ namespace Persistance.DataContext.Migrations
             modelBuilder.Entity("Domain.Entities.Like", b =>
                 {
                     b.HasOne("Domain.Entities.Comment", "Comment")
-                        .WithMany("Likes")
+                        .WithMany()
                         .HasForeignKey("CommentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -723,8 +728,6 @@ namespace Persistance.DataContext.Migrations
 
             modelBuilder.Entity("Domain.Entities.Comment", b =>
                 {
-                    b.Navigation("Likes");
-
                     b.Navigation("ReplyComments");
                 });
 

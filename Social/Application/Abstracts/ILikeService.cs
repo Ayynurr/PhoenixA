@@ -1,8 +1,11 @@
-﻿using Application.DTOs.LikeDto;
+﻿using Application.DTOs;
+using Application.DTOs;
 
 namespace Application.Abstracts;
 
 public interface ILikeService
 {
-    Task CreateAsync(LikeCreateDto like);
+    Task<int> LikeComment(int commentId, int userId);
+    Task<int> LikePost(int postId, int userId);
+
 }

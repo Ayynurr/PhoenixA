@@ -11,4 +11,5 @@ public class Like : BaseAuditable
     public AppUser User { get; set; } = null!;
     public int CommentId { get; set; }
     public Comment Comment { get; set; }
+
 }

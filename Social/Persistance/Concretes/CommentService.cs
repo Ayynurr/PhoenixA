@@ -1,11 +1,6 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
 using Domain.Exceptions;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Persistance.DataContext;
 
 namespace Persistance.Concretes;

@@ -1,4 +1,4 @@
-﻿namespace Application.DTOs.LikeDto;
+﻿namespace Application.DTOs;
 
 public class LikeCreateDto
 {
