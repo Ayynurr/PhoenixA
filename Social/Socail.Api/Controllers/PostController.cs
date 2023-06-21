@@ -6,9 +6,11 @@ using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using Persistance.Concretes;
 using Persistance.DataContext;
 
 namespace Socail.Api.Controllers;
@@ -22,11 +24,13 @@ public class PostController : ControllerBase
     readonly IPostService _postService;
     readonly AppDbContext _dbcontext;
     readonly IWebHostEnvironment  _hostEnvironment;
-    public PostController(IPostService postService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment )
+    readonly ILikeService _likeService;
+    public PostController(IPostService postService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, ILikeService likeService)
     {
         _postService = postService;
         _dbcontext = dbcontext;
         _hostEnvironment = hostEnvironment;
+        _likeService = likeService;
     }
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] PostCreateDto post)
@@ -139,6 +143,19 @@ public class PostController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+    }
+    [HttpPost("post/{postId}")]
+    public async Task<IActionResult> LikePost([FromRoute] int postId, [FromRoute] int userId)
+    {
+        try
+        {
+            int totalLikes = await _likeService.LikePost(postId, userId);
+            return Ok(new { TotalLikes = totalLikes });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
 }

@@ -18,10 +18,12 @@ public class CommentController : ControllerBase
 {
     readonly ICommentService _commentService;
     readonly AppDbContext _dbcontext;
-    public CommentController(ICommentService commentService, AppDbContext dbcontext)
+    readonly ILikeService _likeService;
+    public CommentController(ICommentService commentService, AppDbContext dbcontext, ILikeService likeService )
     {
         _commentService = commentService;
         _dbcontext = dbcontext;
+        _likeService = likeService;
     }
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CommentCreateDto comment)
@@ -76,6 +78,19 @@ public class CommentController : ControllerBase
             {
                 ex.Message
             });
+        }
+    }
+    [HttpPost("comment/{commentId}")]
+    public async Task<IActionResult> LikeComment([FromRoute] int commentId, [FromRoute] int userId)
+    {
+        try
+        {
+            int totalLikes = await _likeService.LikeComment(commentId, userId);
+            return Ok(new { TotalLikes = totalLikes });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
 }

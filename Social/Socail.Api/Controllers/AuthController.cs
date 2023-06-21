@@ -1,7 +1,9 @@
-﻿using Application.DTOs;
+﻿using Application.Abstracts;
+using Application.DTOs;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -15,8 +17,9 @@ public class AuthController : ControllerBase
 {
     readonly UserManager<AppUser> _userManager;
     readonly IConfiguration _configuration;
-    readonly RoleManager<IdentityRole> _roleManager;
-    public AuthController(UserManager<AppUser> userManager, IConfiguration confifuration, RoleManager<IdentityRole> roleManager)
+    readonly RoleManager<Role> _roleManager;
+    readonly IEmailService _emailService;
+    public AuthController(UserManager<AppUser> userManager, IConfiguration confifuration, RoleManager<Role> roleManager)
     {
         _userManager = userManager;
         _configuration = confifuration;
@@ -41,7 +44,11 @@ public class AuthController : ControllerBase
         {
             return BadRequest(result.Errors);
         }
-        await _userManager.AddToRoleAsync(user, Roles.User.ToString());
+      
+        string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var link = Url.Action("ConfirmUser", "Account", new { token = token, email = user.Email });
+        _emailService.SendMessage($"<a href=\"{link}\"> click for email confirmation</a>", "Confirmation link", register.Email);
+        //await _userManager.AddToRoleAsync(user, Roles.User.ToString());
         return Ok(new
         {
             user.Name,
@@ -83,19 +90,35 @@ public class AuthController : ControllerBase
             Token = new JwtSecurityTokenHandler().WriteToken(token),
         });
     }
-    [HttpPost("createRoles")]
-    public async Task CreateRoles()
+    //[HttpPost("createRoles")]
+    //public async Task CreateRoles()
+    //{
+    //    foreach (var item in Enum.GetValues(typeof(Roles)))
+    //    {
+    //        if (!(await _roleManager.RoleExistsAsync(item.ToString())))
+    //        {
+    //            await _roleManager.CreateAsync(new IdentityRole
+    //            {
+    //                Name = item.ToString()
+    //            });
+    //        }
+    //    }
+    //}
+    [HttpPost("confirm")]
+    public async Task<IActionResult> ConfirmUser(string email, string token)
     {
-        foreach (var item in Enum.GetValues(typeof(Roles)))
+        AppUser user = await _userManager.FindByEmailAsync(email);
+        if (user == null) throw new Exception("user not found");
+
+
+        IdentityResult identityResult = await _userManager.ConfirmEmailAsync(user, token);
+        if (!identityResult.Succeeded)
         {
-            if (!(await _roleManager.RoleExistsAsync(item.ToString())))
-            {
-                await _roleManager.CreateAsync(new IdentityRole
-                {
-                    Name = item.ToString()
-                });
-            }
+            ModelState.AddModelError("", "Token confirm incorrect");
+            return BadRequest(identityResult.Errors);
         }
+
+        return Ok();
     }
 
 }
