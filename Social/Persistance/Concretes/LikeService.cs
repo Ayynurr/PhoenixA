@@ -30,10 +30,11 @@ public class LikeService : ILikeService
     //    await _dbcontext.SaveChangesAsync();
     //    return (int)loginId;
     //}
-    public async Task<int> LikeComment(int commentId, int userId)
+    public async Task<int> LikeComment(int commentId)
     {
+        var loginId = _currentUserService.UserId;
         var existingLike = await _dbcontext.Likes
-            .FirstOrDefaultAsync(l => l.CommentId == commentId && l.UserId == userId);
+            .FirstOrDefaultAsync(l => l.CommentId == commentId && l.UserId == loginId);
 
         if (existingLike != null)
         {
@@ -43,7 +44,7 @@ public class LikeService : ILikeService
         var newLike = new Like
         {
             CommentId = commentId,
-            UserId = userId
+            UserId = (int)loginId
         };
 
         _dbcontext.Likes.Add(newLike);
@@ -53,10 +54,11 @@ public class LikeService : ILikeService
         return totalLikes;
     }
 
-    public async Task<int> LikePost(int postId, int userId)
+    public async Task<int> LikePost(int postId)
     {
+        var loginId = _currentUserService.UserId;
         var existingLike = await _dbcontext.Likes
-            .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == userId);
+            .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == loginId);
 
         if (existingLike != null)
         {
@@ -66,7 +68,7 @@ public class LikeService : ILikeService
         var newLike = new Like
         {
             PostId = postId,
-            UserId = userId
+            UserId = (int)loginId
         };
 
         _dbcontext.Likes.Add(newLike);

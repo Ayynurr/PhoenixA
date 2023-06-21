@@ -146,11 +146,11 @@ public class PostController : ControllerBase
         }
     }
     [HttpPost("post/{postId}")]
-    public async Task<IActionResult> LikePost([FromRoute] int postId, [FromRoute] int userId)
+    public async Task<IActionResult> LikePost([FromRoute] int postId)
     {
         try
         {
-            int totalLikes = await _likeService.LikePost(postId, userId);
+            int totalLikes = await _likeService.LikePost(postId);
             return Ok(new { TotalLikes = totalLikes });
         }
         catch (Exception ex)

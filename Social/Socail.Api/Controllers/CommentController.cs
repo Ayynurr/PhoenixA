@@ -81,11 +81,11 @@ public class CommentController : ControllerBase
         }
     }
     [HttpPost("comment/{commentId}")]
-    public async Task<IActionResult> LikeComment([FromRoute] int commentId, [FromRoute] int userId)
+    public async Task<IActionResult> LikeComment([FromRoute] int commentId)
     {
         try
         {
-            int totalLikes = await _likeService.LikeComment(commentId, userId);
+            int totalLikes = await _likeService.LikeComment(commentId);
             return Ok(new { TotalLikes = totalLikes });
         }
         catch (Exception ex)
