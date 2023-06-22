@@ -84,24 +84,30 @@ public class UserService : IUserService
     public async Task<List<GetProfileImage>> UpdateImage(UpdateProfileImage updateImage)
     {
         var loginId = _currentUserService.UserId;
-        AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == loginId) ??
+        AppUser? user = await _dbcontext.Users.Include(u=>u.UserImages).FirstOrDefaultAsync(u => u.Id == loginId) ??
           throw new NotfoundException();
         user.Images ??= new List<Image>();
         List<GetProfileImage> updateImages = new();
 
 
-        if (updateImage.Images.CheckFileSize(2048))
+        if (updateImage.ProfileImage.CheckFileSize(2048))
             throw new FileTypeException();
-        if (!updateImage.Images.CheckFileType("image/"))
+        if (!updateImage.ProfileImage.CheckFileType("image/"))
             throw new FileSizeException();
-        string newFileName = await updateImage.Images.FileUploadAsync(_hostEvnironment.WebRootPath, "Images");
+        if (updateImage.BackImage.CheckFileSize(2048))
+            throw new FileTypeException();
+        if (!updateImage.BackImage.CheckFileType("image/"))
+            throw new FileSizeException();
+        string newFileNameProfile = await updateImage.ProfileImage.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
+        string newFileNameBackraound = await updateImage.BackImage.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
 
         UserImage newImage = new()
         {
-            ProfileImageName = newFileName,
-            BackraundImageName = newFileName,
+            ProfileImageName = newFileNameProfile,
+            BackraundImageName = newFileNameBackraound,
             UserId = (int)loginId,
-            Path = Path.Combine(_hostEvnironment.WebRootPath, "UserImages"),
+            PathProfile = Path.Combine(_hostEvnironment.WebRootPath, "UserImages"),
+            PathBack = Path.Combine(_hostEvnironment.WebRootPath, "UserImages"),
             UpdatedDate = DateTime.Now
         };
         user.UserImages.Add(newImage);

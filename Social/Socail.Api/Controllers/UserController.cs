@@ -1,6 +1,8 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
+using Application.DTOs.ImagePostDto;
 using Application.DTOs.PostDto;
+using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -34,7 +36,7 @@ public class UserController : ControllerBase
         try
         {
             await _userService.PrfileCreate(profile);
-            return StatusCode(StatusCodes.Status200OK,new ResponseDto { Status="Success",Message="Profile create successfully!"});
+            return StatusCode(StatusCodes.Status200OK, new ResponseDto { Status = "Success", Message = "Profile create successfully!" });
         }
         catch (NotfoundException ex) { return NotFound(new ResponseDto { Message = ex.Message }); }
 
@@ -44,7 +46,7 @@ public class UserController : ControllerBase
         }
     }
     [HttpPost("/api/User/UpdateProfile")]
-    public async Task<IActionResult> UpdateProfile( [FromBody] ProfileUpdateDto update)
+    public async Task<IActionResult> UpdateProfile([FromBody] ProfileUpdateDto update)
     {
         try
         {
@@ -58,5 +60,26 @@ public class UserController : ControllerBase
         }
 
     }
+    [HttpPost("/api/User/UpdateImage")]
+    public async Task<ActionResult> UpdateImage([FromForm] UpdateProfileImage images)
+    {
+        try
+        {
+            return Ok(await _userService.UpdateImage(images));
+        }
+        catch (NotfoundException ex) { return NotFound(new ResponseDto { Message = ex.Message }); }
 
+        catch (FileTypeException ex)
+        {
+            throw new FileTypeException();
+        }
+        catch (FileSizeException)
+        {
+            throw new FileSizeException();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+    }
 }

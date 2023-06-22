@@ -4,6 +4,7 @@ namespace Application.DTOs;
 
 public class UpdateProfileImage
 {
-    public IFormFile Images { get; set; }
+    public IFormFile ProfileImage { get; set; }
+    public IFormFile BackImage { get; set; }
 
 }
