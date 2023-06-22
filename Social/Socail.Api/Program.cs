@@ -1,5 +1,7 @@
 ﻿using Application.Abstracts;
 using Domain.Entities;
+using Infrastructure.Services.Conretes;
+using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -42,8 +44,10 @@ builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<ILikeService,LikeService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSwaggerGen(opt =>
 {
+    //opt.SchemaFilter<EnumSchemaFilter>();
     opt.SwaggerDoc("v1", new OpenApiInfo()
     {
         Version = "v1",
@@ -57,6 +61,7 @@ builder.Services.AddSwaggerGen(opt =>
         BearerFormat = "JWT",
         Scheme = "Bearer",
     });
+    
     opt.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
     {

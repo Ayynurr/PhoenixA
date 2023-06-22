@@ -1,9 +1,12 @@
-﻿namespace Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Xml.Linq;
+
+namespace Domain.Entities;
 
 public enum Gender
 {
-    Male=0,
-    Female=1,
-    Other=2,
-    
+    Female = 1,
+    Male = 2,
+    Other = 3
+
 }

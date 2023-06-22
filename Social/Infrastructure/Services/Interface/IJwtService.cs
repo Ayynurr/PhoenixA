@@ -1,4 +1,6 @@
-﻿namespace Infrastructure.Services.Interface;
+﻿using Domain.Entities;
+
+namespace Infrastructure.Services.Interface;
 
 public interface IJwtService 
 {

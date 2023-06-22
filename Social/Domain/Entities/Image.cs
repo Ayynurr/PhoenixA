@@ -12,6 +12,7 @@ public class Image : BaseAuditable
     public Post? Post { get; set; }
     public int PostId { get; set; }
     public string Path { get; set; } = null!;
+  
     
 
    

@@ -1,6 +1,7 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
 using Domain.Entities;
+using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -117,6 +118,51 @@ public class AuthController : ControllerBase
         }
 
         return Ok();
+    }
+   
+
+    [HttpPost("forgetPassword")]
+    public async Task<IActionResult> ForgotPassword(ForgetPasswordDto forgotPassword)
+    {
+        var user = await _userManager.FindByEmailAsync(forgotPassword.Email);
+        if (user is null)
+            return BadRequest("User not found.");
+
+        string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        string link = Url.Action("ResetPassword", "Account", new { userId = user.Id, token });
+        return Ok(link);
+    }
+    [HttpPost("resetpassword")]
+    public async Task<IActionResult> ResetPassword(string userId, string token)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+            return BadRequest("User ID and token are required.");
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+            return NotFound("User not found.");
+
+        return Ok();
+    }
+
+    [HttpPost("resetp")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto resetPassword, string userId, string token)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+            return BadRequest("User ID and token are required.");
+
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+            throw new Exception("Not Found");
+
+        var result = await _userManager.ResetPasswordAsync(user, token, resetPassword.ConfirmPassword);
+        if (result.Succeeded)
+            return RedirectToAction(nameof(Login));
+
+        return BadRequest("Failed to reset password.");
     }
 
 }

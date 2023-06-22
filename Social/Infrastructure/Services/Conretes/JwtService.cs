@@ -3,39 +3,42 @@ using Infrastructure.Services.Interface;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Infrastructure.Services.Conretes;
 
 public class JwtService : IJwtService
 {
-    private readonly IConfiguration _config;
+    private readonly IConfiguration _configration;
     public JwtService(IConfiguration config)
     {
-        _config = config;
+        _configration = config;
     }
 
     public string GetJwt(AppUser user, IList<string> roles)
     {
-        List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email),
-                //new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                
-            };
-
-        claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
-
-        SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("Jwt:securityKey").Value));
-        SigningCredentials credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        JwtSecurityToken securityToken = new JwtSecurityToken(
-            issuer: _config.GetSection("Jwt:issuer").Value,
-            audience: _config.GetSection("Jwt:audience").Value,
+        List<Claim> claims = new()
+        {
+            new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
+            new Claim(ClaimTypes.Email,user.Email)
+        };
+        string privateKey = _configration["JWT:SecurityKey"];
+        SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(privateKey));
+        SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
+        //token generate
+        JwtSecurityToken token = new JwtSecurityToken
+        (
+            issuer: _configration["JWT:audience"],
+            audience: _configration["JWT:issuer"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMonths(2),
-            signingCredentials: credentials);
-        return new JwtSecurityTokenHandler().WriteToken(securityToken);
+            expires: DateTime.Now.AddDays(100),
+            signingCredentials: signingCredentials);
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
+}
+
+
+
 
 

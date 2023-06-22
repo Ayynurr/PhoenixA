@@ -2,15 +2,11 @@
 using Application.DTOs;
 using Application.DTOs.ImagePostDto;
 using Application.DTOs.PostDto;
-using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Persistance.Concretes;
 using Persistance.DataContext;
 
 namespace Socail.Api.Controllers;
@@ -46,7 +42,7 @@ public class PostController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    [HttpGet()]
+    [HttpGet("/api/Posts")]
     public async Task<IActionResult> GetAllAsync()
     {
         try
@@ -86,7 +82,7 @@ public class PostController : ControllerBase
         #endregion
     }
 
-    [HttpGet("Images/{ImageName}")]
+    [HttpGet("GetImages/{ImageName}")]
     public async Task<IActionResult> GetImagesAsync([FromRoute] string ImageName)
     {
         var file = await _dbcontext.Posts.FirstOrDefaultAsync(f => f.ImageName == ImageName)
@@ -123,7 +119,7 @@ public class PostController : ControllerBase
 
     }
 
-    [HttpPost("{postId}/Images")]
+    [HttpPost("{postId}/UpdateImages")]
     public async Task<ActionResult> UpdatePostAsync(int postId, [FromForm] UpdateImageDto images)
     {
         try
@@ -145,7 +141,7 @@ public class PostController : ControllerBase
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
-    [HttpPost("post/{postId}")]
+    [HttpPost("/api/Post/Like")]
     public async Task<IActionResult> LikePost([FromRoute] int postId)
     {
         try

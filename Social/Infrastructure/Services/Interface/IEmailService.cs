@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Infrastructure.Services.Interface;
 
-namespace Infrastructure.Services.Interface
+public interface IEmailService
 {
-    internal class IEmailService
-    {
-    }
+    void SendMessage(string message, string subject, string to);
 }

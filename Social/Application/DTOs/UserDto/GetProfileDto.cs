@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.Entities;
 
-namespace Application.DTOs.UserDto
+namespace Application.DTOs;
+
+public class GetProfileDto
 {
-    internal class GetProfileDto
-    {
-    }
+    public string Username { get; set; }
+    public string Bio { get; set; }
+    public string Email { get; set; }
+    public Gender Gender { get; set; }
+    public string Address { get; set; }
+
+
 }
