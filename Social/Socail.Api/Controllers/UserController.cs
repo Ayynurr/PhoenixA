@@ -1,13 +1,9 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
-using Application.DTOs.ImagePostDto;
-using Application.DTOs.PostDto;
-using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Persistance.Concretes;
+using Microsoft.EntityFrameworkCore;
 using Persistance.DataContext;
 
 namespace Socail.Api.Controllers;
@@ -21,12 +17,14 @@ public class UserController : ControllerBase
     readonly AppDbContext _dbcontext;
     readonly IWebHostEnvironment _hostEnvironment;
     readonly ILikeService _likeService;
-    public UserController(IUserService userService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, ILikeService likeService)
+    readonly ICurrentUserService _currentUserService;
+    public UserController(IUserService userService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, ILikeService likeService, ICurrentUserService currentUserService )
     {
         _userService = userService;
         _dbcontext = dbcontext;
         _hostEnvironment = hostEnvironment;
         _likeService = likeService;
+        _currentUserService = currentUserService;
     }
 
 
@@ -81,5 +79,97 @@ public class UserController : ControllerBase
         {
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
+    }
+    //[HttpPost("/api/Users")]
+    //public async Task<IActionResult> UserGet()
+    //{
+    //    try
+    //    {
+    //        return StatusCode(200, await _userService.UserGet());
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return StatusCode(StatusCodes.Status500InternalServerError, new
+    //        {
+    //            ex.Message
+    //        });
+    //    }
+    //}
+    [HttpGet("GetImages/")]
+    public async Task<IActionResult> GetImagesAsync()
+    {
+        var loginId = _currentUserService.UserId;
+        var fileProfile = await _dbcontext.UserImages.FirstOrDefaultAsync(f => f.UserId == loginId)
+            ?? throw new Exception("Image not found");
+
+        UriBuilder? uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
+
+        string publicImage = Path.Combine(uriBuilder.Uri.AbsoluteUri, "UserImages", fileProfile.ProfileImageName);
+        string publicBack = Path.Combine(uriBuilder.Uri.AbsoluteUri, "UserImages", fileProfile.BackraundImageName);
+        
+
+        #region
+        //string pathProfile = Path.Combine(_hostEnvironment.WebRootPath, "UserImages", fileProfile.ProfileImageName);
+        //string pathBack = Path.Combine(_hostEnvironment.WebRootPath, "UserImages", fileProfile.BackraundImageName);
+        //if (!System.IO.File.Exists(pathProfile))
+        //    throw new Exception("File not found");
+        //if (!System.IO.File.Exists(pathBack))
+        //    throw new Exception("File not found");
+
+        //FileExtensionContentTypeProvider provider = new();
+        //byte[] imageBytes1 = System.IO.File.ReadAllBytes(pathProfile);
+        //byte[] imageBytes2 = System.IO.File.ReadAllBytes(pathBack);
+
+        //string contentTypeProfile;
+        //string contentTypeBack;
+
+        //if (!provider.TryGetContentType(pathProfile, out contentTypeProfile))
+        //    contentTypeProfile = "application/octet-stream";
+        //if (!provider.TryGetContentType(pathBack, out contentTypeBack))
+        //    contentTypeBack = "application/octet-stream";
+
+        //var base64Profile = Convert.ToBase64String(imageBytes1);
+        //var base64Back = Convert.ToBase64String(imageBytes2);
+
+        //var result = new
+        //{
+        //    ProfileImage = base64Profile,
+        //    BackgroundImage = base64Back
+        //};
+        #endregion
+
+        return Ok(new {profile= publicImage,profileback = publicBack });
+    }
+
+
+    [HttpPost("{username}")]
+    public async Task<IActionResult> UserGetByUsername(string username)
+    {
+        try
+        {
+            return StatusCode(200, await _userService.UserGetByUsername(username));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                ex.Message
+            });
+        }
+
+    }
+    [HttpDelete("api/User/DeleteImage")]
+    public async Task<IActionResult> DeleteAsync(int imageId)
+    {
+        try
+        {
+            await _userService.DeleteImage(imageId);
+            return StatusCode(StatusCodes.Status204NoContent, new ResponseDto { Status = "Successs", Message = "Post delete successfully" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
+        }
+
     }
 }

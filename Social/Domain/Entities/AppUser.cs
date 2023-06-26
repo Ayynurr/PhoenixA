@@ -17,4 +17,6 @@ public class AppUser : IdentityUser<int>
     public ICollection<Image> Images { get; set; }
     public ICollection<Story> Stories { get; set; }
     public ICollection<UserImage> UserImages { get; set; }
+    public ICollection<UserFriend> Friends { get; set; }
+
 }

@@ -1,7 +1,4 @@
-﻿using Application.DTOs;
-using Microsoft.AspNetCore.Mvc;
-
-namespace Application.Abstracts;
+﻿namespace Application.Abstracts;
 
 public interface ICurrentUserService
 {

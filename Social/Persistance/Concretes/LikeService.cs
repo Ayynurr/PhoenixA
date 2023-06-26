@@ -1,4 +1,7 @@
 ﻿using Application.Abstracts;
+using Domain;
+using Microsoft.EntityFrameworkCore;
+using Persistance.Datacontext.Migrations;
 using Persistance.DataContext;
 
 namespace Persistance.Concretes;
@@ -33,31 +36,30 @@ public class LikeService : ILikeService
     public async Task<int> LikeComment(int commentId)
     {
         var loginId = _currentUserService.UserId;
-        var existingLike = await _dbcontext.Likes
+        var existingLike = await _dbcontext.LikeComments
             .FirstOrDefaultAsync(l => l.CommentId == commentId && l.UserId == loginId);
-
         if (existingLike != null)
         {
             throw new Exception("You have already liked this comment.");
         }
 
-        var newLike = new Like
+        var newLike = new LikeComment
         {
             CommentId = commentId,
             UserId = (int)loginId
         };
-
-        _dbcontext.Likes.Add(newLike);
+        _dbcontext.LikeComments.Add(newLike);
+        int totalLikes;
+        int like = ( totalLikes = await _dbcontext.LikeComments.CountAsync(l => l.CommentId == commentId)+1);
+        //int like = totalLikes + 1;
         await _dbcontext.SaveChangesAsync();
-
-        int totalLikes = await _dbcontext.Likes.CountAsync(l => l.CommentId == commentId);
-        return totalLikes;
+        return like;
     }
 
     public async Task<int> LikePost(int postId)
     {
         var loginId = _currentUserService.UserId;
-        var existingLike = await _dbcontext.Likes
+        var existingLike = await _dbcontext.LikePosts
             .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == loginId);
 
         if (existingLike != null)
@@ -65,16 +67,16 @@ public class LikeService : ILikeService
             throw new Exception("You have already liked this post.");
         }
 
-        var newLike = new Like
+        var newLike = new LikePost
         {
             PostId = postId,
             UserId = (int)loginId
         };
 
-        _dbcontext.Likes.Add(newLike);
+        _dbcontext.LikePosts.Add(newLike);
         await _dbcontext.SaveChangesAsync();
 
-        int totalLikes = await _dbcontext.Likes.CountAsync(l => l.PostId == postId);
+        int totalLikes = await _dbcontext.LikePosts.CountAsync(l => l.PostId == postId);
         return totalLikes;
     }
 

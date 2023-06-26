@@ -5,7 +5,6 @@ using Application.DTOs.PostDto;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Persistance.DataContext;
 
@@ -21,12 +20,14 @@ public class PostController : ControllerBase
     readonly AppDbContext _dbcontext;
     readonly IWebHostEnvironment  _hostEnvironment;
     readonly ILikeService _likeService;
-    public PostController(IPostService postService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, ILikeService likeService)
+    readonly ICurrentUserService _currentUserService;
+    public PostController(IPostService postService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, ILikeService likeService, ICurrentUserService currentUserService)
     {
         _postService = postService;
         _dbcontext = dbcontext;
         _hostEnvironment = hostEnvironment;
         _likeService = likeService;
+        _currentUserService = currentUserService;
     }
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] PostCreateDto post)
@@ -47,7 +48,7 @@ public class PostController : ControllerBase
     {
         try
         {
-            return StatusCode(200, await _dbcontext.Posts.ToListAsync());
+            return StatusCode(200, await _postService.GetAllAsync());
         }
         catch (Exception ex)
         {
@@ -63,7 +64,7 @@ public class PostController : ControllerBase
     {
         try
         {
-            return StatusCode(200, await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == id));
+            return StatusCode(200, await _postService.GetByIdAsync(id)) ;
         }
         catch (Exception ex)
         {
@@ -82,24 +83,38 @@ public class PostController : ControllerBase
         #endregion
     }
 
-    [HttpGet("GetImages/{ImageName}")]
-    public async Task<IActionResult> GetImagesAsync([FromRoute] string ImageName)
+    [HttpGet("GetImages")]
+    public async Task<IActionResult> GetImagesAsync()
     {
-        var file = await _dbcontext.Posts.FirstOrDefaultAsync(f => f.ImageName == ImageName)
+        var loginId = _currentUserService.UserId;
+        var file = await _dbcontext.Posts.FirstOrDefaultAsync(f => f.UserId == loginId)
             ?? throw new Exception("Image not found");
 
-        string path = Path.Combine(_hostEnvironment.WebRootPath, "Images", file.ImageName);
-        if (!System.IO.File.Exists(path))
-            throw new Exception("File not found");
+        var uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
 
-        FileExtensionContentTypeProvider provider = new();
-        byte[] imageBytes = System.IO.File.ReadAllBytes(path);
+        string publicImage = Path.Combine(uriBuilder.Uri.AbsoluteUri, "Images", file.ImageName);
 
 
-        if (provider.TryGetContentType(path, out string? contentType))
-            contentType = "application/octet-stream";
+       
 
-        return File(imageBytes, contentType);
+        return Ok(new { profile = publicImage });
+        #region
+        //var file = await _dbcontext.Posts.FirstOrDefaultAsync(f => f.ImageName == ImageName)
+        //    ?? throw new Exception("Image not found");
+
+        //string path = Path.Combine(_hostEnvironment.WebRootPath, "Images", file.ImageName);
+        //if (!System.IO.File.Exists(path))
+        //    throw new Exception("File not found");
+
+        //FileExtensionContentTypeProvider provider = new();
+        //byte[] imageBytes = System.IO.File.ReadAllBytes(path);
+
+
+        //if (provider.TryGetContentType(path, out string? contentType))
+        //    contentType = "application/octet-stream";
+
+        //return File(imageBytes, contentType);
+        #endregion
     }
 
 
@@ -154,4 +169,18 @@ public class PostController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
+    [HttpDelete]
+    public async Task<IActionResult> DeleteAsync(int id)
+    {
+        try
+        {
+            await _postService.DeleteAsync(id);
+            return StatusCode(StatusCodes.Status204NoContent, new ResponseDto { Status = "Successs", Message = "Post delete successfully" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
+        }
+    }
+
 }

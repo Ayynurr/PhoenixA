@@ -1,15 +1,13 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
-using Application.DTOs.ImagePostDto;
-using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Persistance.DataContext;
 using Persistance.Extentions;
 
 namespace Persistance.Concretes;
+
 
 public class UserService : IUserService
 {
@@ -24,12 +22,10 @@ public class UserService : IUserService
         _hostEvnironment = hostEvnironment;
     }
 
-    public Task<GetProfileDto> GetAll(GetProfileDto getAll)
+    public Task DeleteImage(int imageId)
     {
         throw new NotImplementedException();
     }
-
-
 
     public async Task PrfileCreate(ProfileCreateDto profileCreate)
     {
@@ -79,51 +75,106 @@ public class UserService : IUserService
         };
     }
 
-
-
-    public async Task<List<GetProfileImage>> UpdateImage(UpdateProfileImage updateImage)
+    public Task<List<GetProfileImage>> UpdateImage(UpdateProfileImage updateImage)
     {
-        var loginId = _currentUserService.UserId;
-        AppUser? user = await _dbcontext.Users.Include(u=>u.UserImages).FirstOrDefaultAsync(u => u.Id == loginId) ??
-          throw new NotfoundException();
-        user.Images ??= new List<Image>();
-        List<GetProfileImage> updateImages = new();
-
-
-        if (updateImage.ProfileImage.CheckFileSize(2048))
-            throw new FileTypeException();
-        if (!updateImage.ProfileImage.CheckFileType("image/"))
-            throw new FileSizeException();
-        if (updateImage.BackImage.CheckFileSize(2048))
-            throw new FileTypeException();
-        if (!updateImage.BackImage.CheckFileType("image/"))
-            throw new FileSizeException();
-        string newFileNameProfile = await updateImage.ProfileImage.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
-        string newFileNameBackraound = await updateImage.BackImage.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
-
-        UserImage newImage = new()
-        {
-            ProfileImageName = newFileNameProfile,
-            BackraundImageName = newFileNameBackraound,
-            UserId = (int)loginId,
-            PathProfile = Path.Combine(_hostEvnironment.WebRootPath, "UserImages"),
-            PathBack = Path.Combine(_hostEvnironment.WebRootPath, "UserImages"),
-            UpdatedDate = DateTime.Now
-        };
-        user.UserImages.Add(newImage);
-        updateImages.Add(new GetProfileImage
-        {
-            ProfileImage = newImage.ProfileImageName,
-            BackraoundImage = newImage.BackraundImageName,
-            UserId = (int)loginId,
-            UrlProfile = $"https://localhost:7275/api/Post/Images/{user.UserImages}",
-            UrlBackraound = $"https://localhost:7275/api/Post/Images/{user.UserImages}"
-        });
-        await _dbcontext.SaveChangesAsync();
-        return updateImages;
-
-
+        throw new NotImplementedException();
     }
+
+
+
+    //public async Task<List<GetProfileImage>> UpdateImage(UpdateProfileImage updateImage)
+    //{
+    //    var loginId = _currentUserService.UserId;
+    //    AppUser? user = await _dbcontext.Users.Include(u=>u.UserImages).FirstOrDefaultAsync(u => u.Id == loginId) ??
+    //      throw new NotfoundException();
+    //    user.Images ??= new List<Image>();
+    //    List<GetProfileImage> updateImages = new();
+
+
+    //    if (updateImage.ProfileImage.CheckFileSize(2048))
+    //        throw new FileTypeException();
+    //    if (!updateImage.ProfileImage.CheckFileType("image/"))
+    //        throw new FileSizeException();
+    //    if (updateImage.BackImage.CheckFileSize(2048))
+    //        throw new FileTypeException();
+    //    if (!updateImage.BackImage.CheckFileType("image/"))
+    //        throw new FileSizeException();
+    //    string newFileNameProfile = await updateImage.ProfileImage.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
+    //    string newFileNameBackraound = await updateImage.BackImage.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
+
+    //    UserImage newImage = new()
+    //    {
+    //        ProfileImageName = newFileNameProfile,
+    //        BackraundImageName = newFileNameBackraound,
+    //        UserId = (int)loginId,
+    //        PathProfile = Path.Combine(_hostEvnironment.WebRootPath, "UserImages"),
+    //        PathBack = Path.Combine(_hostEvnironment.WebRootPath, "UserImages"),
+    //        UpdatedDate = DateTime.Now
+    //    };
+    //    user.UserImages.Add(newImage);
+    //    updateImages.Add(new GetProfileImage
+    //    {
+    //        ProfileImage = newImage.ProfileImageName,
+    //        BackraoundImage = newImage.BackraundImageName,
+    //        UserId = (int)loginId,
+    //        UrlProfile = $"https://localhost:7275/api/Post/Images/{user.UserImages}",
+    //        UrlBackraound = $"https://localhost:7275/api/Post/Images/{user.UserImages}"
+    //    });
+    //    await _dbcontext.SaveChangesAsync();
+    //    return updateImages;
+
+
+    //}
+    //public async Task DeleteImage(int imageId)
+    //{
+    //    var loginId = _currentUserService.UserId;
+    //    AppUser? user = await _dbcontext.Users.Include(u => u.UserImages).FirstOrDefaultAsync(u => u.Id == loginId) ??
+    //        throw new NotfoundException();
+
+    //    UserImage image = user.UserImages.FirstOrDefault(img => img.Id == imageId);
+    //    if (image != null)
+    //    {
+    //        string profileImagePath = Path.Combine(image.PathProfile, image.ProfileImageName);
+    //        string backImagePath = Path.Combine(image.PathBack, image.BackraundImageName);
+
+    //        if (File.Exists(profileImagePath))
+    //        {
+    //            File.Delete(profileImagePath);
+    //        }
+    //        if (File.Exists(backImagePath))
+    //        {
+    //            File.Delete(backImagePath);
+    //        }
+
+    //        user.UserImages.Remove(image);
+
+    //        await _dbcontext.SaveChangesAsync();
+    //    }
+    //}
+
+
+    public Task<GetProfileDto> UserGet()
+    {
+        throw new NotImplementedException();
+    }
+
+    //public async Task<GetProfileDto> UserGet()
+    //{
+    //    List<AppUser>? user = await _dbcontext.Users.ToListAsync() ?? throw new NotfoundException();
+
+
+
+    //    return user;
+    //}
+
+    public async Task<UserGetDto> UserGetByUsername(string username)
+    {
+        AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(s => s.UserName == username) ??
+           throw new NotfoundException();
+
+        return new UserGetDto() { Name = user.Name,Address= user.Address,Surname = user.Surname,Bio = user.Bio,Gender = user.Gender};
+    }
+    ////Adminle qarisdirilib buneeee
 }
 
 

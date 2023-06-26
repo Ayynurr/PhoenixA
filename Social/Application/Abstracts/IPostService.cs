@@ -8,9 +8,10 @@ public interface IPostService
 {
     Task<PostGetDto> CreateAsync(PostCreateDto post);
     Task<PostGetDto> GetByIdAsync(int id);
-    Task<PostGetDto> GetAllAsync();
+    Task<List<PostGetDto>> GetAllAsync();
     Task<PostGetDto> UpdateAsync(PostUpdateDto post,int id);
     Task<List<ImageGetDto>> UpdateImagesAsync(UpdateImageDto updateImage,int postId);
+    Task DeleteAsync(int id);
 
 
 }

@@ -11,8 +11,10 @@ public class Comment : BaseAuditable
     public int UserId { get; set; }
     public Comment? TopComment { get; set; } 
     public int? TopCommentId { get; set; }
+    public int PostId { get; set; }
+    public Post Post { get; set; }
     public ICollection<Comment> ReplyComments { get; set; }
-    public ICollection<Like> Likes { get; set; }
-
+    public ICollection<LikeComment> Likes { get; set; }
+    
 
 }

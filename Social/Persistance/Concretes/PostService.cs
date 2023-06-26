@@ -4,6 +4,7 @@ using Application.DTOs.ImagePostDto;
 using Application.DTOs.PostDto;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Persistance.DataContext;
 using Persistance.Extentions;
 
@@ -90,17 +91,12 @@ public class PostService : IPostService
         return new PostGetDto() { Content = post.Content, Id = post.Id };
 
     }
-    public async Task<PostGetDto> GetAllAsync()
+    public async Task<List<PostGetDto>> GetAllAsync()
     {
-        List<Post>? posts = await _dbcontext.Posts.ToListAsync() ?? throw new NotfoundException();
-        List<PostGetDto> postDtos = posts.Select(p => new PostGetDto
-        {
-            Id = p.Id,
-            Content = p.Content,
-        }).ToList();
-
-        return new PostGetDto { };
-
+        var posts = await _dbcontext.Posts
+            .Select(s => new PostGetDto { Id = s.Id, Content = s.Content })
+            .ToListAsync();
+        return posts;
     }
     public async Task<PostGetDto> UpdateAsync(PostUpdateDto post, int id)
     {
@@ -151,7 +147,22 @@ public class PostService : IPostService
         ///COUNTRY
     }
 
+    public async Task DeleteAsync(int id)
+    {
 
+        Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(i => i.Id == id) ?? throw new NotfoundException();
+        string path = Path.Combine(_hostEnvironment.WebRootPath,"Images");
+        if (path != null)
+        {
+            if (System.IO.File.Exists(path))
+            {
+                System.IO.File.Delete(path);
+            }
+        }
+        _dbcontext.Posts.Remove(post);
+        await _dbcontext.SaveChangesAsync();
+
+    }
 }
 
 

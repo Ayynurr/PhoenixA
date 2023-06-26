@@ -1,13 +1,10 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
-using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.EntityFrameworkCore;
-using Persistance.Concretes;
 using Persistance.DataContext;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Socail.Api.Controllers;
 
@@ -42,8 +39,7 @@ public class CommentController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
-        //await _commentService.CommentDeleteAsync(id);
-        //return StatusCode(StatusCodes.Status200OK);
+        
         try
         {
             await _commentService.CommentDeleteAsync(id);
@@ -54,39 +50,29 @@ public class CommentController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
         }
 
-        //try
-        //{
-        //    return Ok(await _commentService.CommentDeleteAsync(id));
-        //}
-        //catch (NotfoundException ex) { return NotFound(new ResponseDto { Message = ex.Message }); }
-
-        //catch (Exception)
-        //{
-        //    return StatusCode(StatusCodes.Status500InternalServerError);
-        //}
     }
-    [HttpPost("/api/Comments")]
-    public async Task<IActionResult> GettAll()
-    {
-        try
-        {
-            return StatusCode(200, await _dbcontext.Comments.ToListAsync());
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new
-            {
-                ex.Message
-            });
-        }
-    }
-    [HttpPost("comment/{commentId}")]
+  
+    [HttpPost("/api/Comment/Like/{commentId}")]
     public async Task<IActionResult> LikeComment([FromRoute] int commentId)
     {
         try
         {
-            int totalLikes = await _likeService.LikeComment(commentId);
-            return Ok(new { TotalLikes = totalLikes });
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub");
+
+            if (userIdClaim != null)
+            {
+                var userId = userIdClaim.Value;
+
+                int totalLikes = await _likeService.
+                    LikeComment( commentId);
+                return Ok(new { TotalLikes = totalLikes });
+            }   
+            return BadRequest();
         }
         catch (Exception ex)
         {
@@ -94,3 +80,4 @@ public class CommentController : ControllerBase
         }
     }
 }
+

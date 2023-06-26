@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+﻿using Application.DTOs.CommentDto.AuthDto;
 using FluentValidation;
 
 namespace Application.Validations.AuthValidator;

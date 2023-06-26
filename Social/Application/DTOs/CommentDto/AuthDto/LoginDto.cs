@@ -1,5 +1,4 @@
-﻿
-namespace Application.DTOs;
+﻿namespace Application.DTOs.CommentDto.AuthDto;
 
 public class LoginDto
 {

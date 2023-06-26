@@ -16,7 +16,9 @@ public class CommentService : ICommentService
     }
     public async Task CommentDeleteAsync(int id)
     {
-        Comment? comment = await _dbcontext.Comments.FindAsync(id) ?? throw new NotfoundException();
+        var loginId = _currentUserService.UserId;
+        Comment? comment = await _dbcontext.Comments.FirstOrDefaultAsync(i=>i.Id == id && i.UserId == loginId) ?? throw new NotfoundException();
+        
          _dbcontext.Comments.Remove(comment);
         await _dbcontext.SaveChangesAsync();
     }
@@ -52,21 +54,12 @@ public class CommentService : ICommentService
         return new CommentGetDto { Content=newComment.Content,Id = newComment.Id};
     }
 
-    
-
-    public async Task<CommentGetDto> GetAll(int id)
-    {
-        List<Comment>? comment = await _dbcontext.Comments.ToListAsync() ?? throw new NotfoundException();
-        List<CommentGetDto> postDtos = comment.Select(p => new CommentGetDto
-        {
-            Id = p.Id,
-            Content = p.Content,
-        }).ToList();
-
-        return new CommentGetDto { };
-    }
-   
-
+    //public async Task<List<CommentGetDto>> GetPostComment(int id)
+    //{
+    //    var loginId = _currentUserService.UserId;
+    //    Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(i=>i.Id == id && i.UserId == loginId) ?? throw new NotfoundException();
+        
+    //}
 }
 
 

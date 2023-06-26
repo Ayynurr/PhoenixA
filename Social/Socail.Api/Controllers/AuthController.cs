@@ -1,5 +1,4 @@
-﻿using Application.Abstracts;
-using Application.DTOs;
+﻿using Application.DTOs.CommentDto.AuthDto;
 using Domain.Entities;
 using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Identity;
@@ -43,7 +42,8 @@ public class AuthController : ControllerBase
         {
             return BadRequest(result.Errors);
         }
-      
+        //email a
+        //
         string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var link = Url.Action("ConfirmUser", "Account", new { token = token, email = user.Email });
         _emailService.SendMessage($"<a href=\"{link}\"> click for email confirmation</a>", "Confirmation link", register.Email);
@@ -58,52 +58,67 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto login)
     {
-        AppUser user = await _userManager.FindByNameAsync(login.Username);
-        if (user is null)
+        var user = await _userManager.FindByNameAsync(login.Username);
+        if (user == null)
         {
-            return BadRequest(new
-            {
-                Message = "Username or password incorrect!!!"
-            });
+            return BadRequest(new { Message = "Username or password incorrect!!!" });
         }
-        List<Claim> claims = new()
-        {
-            new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
-            new Claim(ClaimTypes.Email,user.Email)
-        };
-        string privateKey = _configuration["JWT:SecurityKey"];
-        SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(privateKey));
-        SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-        //token generate
-        JwtSecurityToken token = new JwtSecurityToken
-            (
-            issuer: _configuration["JWT:audience"],
-            audience: _configuration["JWT:issuer"],
-            claims: claims,
-            expires: DateTime.Now.AddDays(100),
-            signingCredentials: signingCredentials
 
-            );
-        return Ok(new
+        var passwordValid = await _userManager.CheckPasswordAsync(user, login.Password);
+        if (!passwordValid)
         {
-            Token = new JwtSecurityTokenHandler().WriteToken(token),
-        });
+            return BadRequest(new { Message = "Username or password incorrect!!!" });
+        }
+
+        // JWT oluşturma işlemine geç
+
+        // JWT ayarları ve imzalama bilgileri
+        var jwtSettings = _configuration.GetSection("JWT");
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecurityKey"]));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        // JWT taleplerini oluştur
+        var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim("sub",user.Id.ToString())
+        // İhtiyaç duyduğunuz diğer talepleri ekleyin
+    };
+
+        // JWT oluşturma
+        var token = new JwtSecurityToken(
+            issuer: jwtSettings["Issuer"],
+            audience: jwtSettings["Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(7), // Tokenın süresi
+            signingCredentials: credentials
+        );
+
+        // JWT tokenı oluştur
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var encodedToken = tokenHandler.WriteToken(token);
+
+        // Cevap olarak tokenı döndür
+        return Ok(new { Token = encodedToken });
     }
-    //[HttpPost("createRoles")]
-    //public async Task CreateRoles()
-    //{
-    //    foreach (var item in Enum.GetValues(typeof(Roles)))
-    //    {
-    //        if (!(await _roleManager.RoleExistsAsync(item.ToString())))
-    //        {
-    //            await _roleManager.CreateAsync(new IdentityRole
-    //            {
-    //                Name = item.ToString()
-    //            });
-    //        }
-    //    }
-    //}
-    [HttpPost("confirm")]
+
+
+//[HttpPost("createRoles")]
+//public async Task CreateRoles()
+//{
+//    foreach (var item in Enum.GetValues(typeof(Roles)))
+//    {
+//        if (!(await _roleManager.RoleExistsAsync(item.ToString())))
+//        {
+//            await _roleManager.CreateAsync(new IdentityRole
+//            {
+//                Name = item.ToString()
+//            });
+//        }
+//    }
+//}
+[HttpPost("confirm")]
     public async Task<IActionResult> ConfirmUser(string email, string token)
     {
         AppUser user = await _userManager.FindByEmailAsync(email);
@@ -132,18 +147,7 @@ public class AuthController : ControllerBase
         string link = Url.Action("ResetPassword", "Account", new { userId = user.Id, token });
         return Ok(link);
     }
-    [HttpPost("resetpassword")]
-    public async Task<IActionResult> ResetPassword(string userId, string token)
-    {
-        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
-            return BadRequest("User ID and token are required.");
-
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user is null)
-            return NotFound("User not found.");
-
-        return Ok();
-    }
+    
 
     [HttpPost("resetp")]
     public async Task<IActionResult> ResetPassword(ResetPasswordDto resetPassword, string userId, string token)
