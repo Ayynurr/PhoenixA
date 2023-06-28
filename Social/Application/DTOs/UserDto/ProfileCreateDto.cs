@@ -6,6 +6,5 @@ public class ProfileCreateDto
 {
    
     public IFormFile ImageFile { get; set; }
-    public string Bio { get; set; }
 
 }

@@ -4,7 +4,6 @@ using Application.DTOs.ImagePostDto;
 using Application.DTOs.PostDto;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Persistance.DataContext;
 using Persistance.Extentions;
 

@@ -1,8 +1,13 @@
 ﻿using Application.DTOs;
-using Domain.Entities;
-namespace Application.Abstracts;
+namespace Application;
 
 public interface IStoryService
 {
-    Task<StoryGetDto> CrateAsync(CreateStoryDto story);
+    Task<StoryGetDto> CreateStoryImageAsync(CreateStoryDto story);
+    Task<List<StoryGetDto>> GetAllAsync();
+    Task<List<StoryGetDto>> GetUserAsync(string username);
+    Task<StoryGetDto> CreateVideoAsync(CreateVideo story);
+    Task<List<StoryGetDto>> GetFriendAsync();
+    Task DeleteAsync(int id);
+    Task<List<StoryGetDto>> ArchiveAsync(int id);
 }

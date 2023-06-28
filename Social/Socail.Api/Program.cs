@@ -48,6 +48,8 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<ILikeService,LikeService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
+builder.Services.AddScoped<IStoryService, StoryService>();  
+builder.Services.AddScoped<IGroupService,GroupService>();
 
 builder.Services.AddSwaggerGen(opt =>
 {

@@ -4,6 +4,7 @@ using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Persistance;
 using Persistance.DataContext;
 
 namespace Socail.Api.Controllers;
@@ -80,6 +81,7 @@ public class UserController : ControllerBase
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
+   
     //[HttpPost("/api/Users")]
     //public async Task<IActionResult> UserGet()
     //{
@@ -95,51 +97,51 @@ public class UserController : ControllerBase
     //        });
     //    }
     //}
-    [HttpGet("GetImages/")]
-    public async Task<IActionResult> GetImagesAsync()
-    {
-        var loginId = _currentUserService.UserId;
-        var fileProfile = await _dbcontext.UserImages.FirstOrDefaultAsync(f => f.UserId == loginId)
-            ?? throw new Exception("Image not found");
+    //[HttpGet("GetImages/")]
+    //public async Task<IActionResult> GetImagesAsync()
+    //{
+    //    var loginId = _currentUserService.UserId;
+    //    var fileProfile = await _dbcontext.UserImages.FirstOrDefaultAsync(f => f.UserId == loginId)
+    //        ?? throw new Exception("Image not found");
 
-        UriBuilder? uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
+    //    UriBuilder? uriBuilder = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1);
 
-        string publicImage = Path.Combine(uriBuilder.Uri.AbsoluteUri, "UserImages", fileProfile.ProfileImageName);
-        string publicBack = Path.Combine(uriBuilder.Uri.AbsoluteUri, "UserImages", fileProfile.BackraundImageName);
-        
+    //    string publicImage = Path.Combine(uriBuilder.Uri.AbsoluteUri, "UserImages", fileProfile.ProfileImageName);
+    //    string publicBack = Path.Combine(uriBuilder.Uri.AbsoluteUri, "UserImages", fileProfile.BackraundImageName);
 
-        #region
-        //string pathProfile = Path.Combine(_hostEnvironment.WebRootPath, "UserImages", fileProfile.ProfileImageName);
-        //string pathBack = Path.Combine(_hostEnvironment.WebRootPath, "UserImages", fileProfile.BackraundImageName);
-        //if (!System.IO.File.Exists(pathProfile))
-        //    throw new Exception("File not found");
-        //if (!System.IO.File.Exists(pathBack))
-        //    throw new Exception("File not found");
 
-        //FileExtensionContentTypeProvider provider = new();
-        //byte[] imageBytes1 = System.IO.File.ReadAllBytes(pathProfile);
-        //byte[] imageBytes2 = System.IO.File.ReadAllBytes(pathBack);
+    //    #region
+    //    //string pathProfile = Path.Combine(_hostEnvironment.WebRootPath, "UserImages", fileProfile.ProfileImageName);
+    //    //string pathBack = Path.Combine(_hostEnvironment.WebRootPath, "UserImages", fileProfile.BackraundImageName);
+    //    //if (!System.IO.File.Exists(pathProfile))
+    //    //    throw new Exception("File not found");
+    //    //if (!System.IO.File.Exists(pathBack))
+    //    //    throw new Exception("File not found");
 
-        //string contentTypeProfile;
-        //string contentTypeBack;
+    //    //FileExtensionContentTypeProvider provider = new();
+    //    //byte[] imageBytes1 = System.IO.File.ReadAllBytes(pathProfile);
+    //    //byte[] imageBytes2 = System.IO.File.ReadAllBytes(pathBack);
 
-        //if (!provider.TryGetContentType(pathProfile, out contentTypeProfile))
-        //    contentTypeProfile = "application/octet-stream";
-        //if (!provider.TryGetContentType(pathBack, out contentTypeBack))
-        //    contentTypeBack = "application/octet-stream";
+    //    //string contentTypeProfile;
+    //    //string contentTypeBack;
 
-        //var base64Profile = Convert.ToBase64String(imageBytes1);
-        //var base64Back = Convert.ToBase64String(imageBytes2);
+    //    //if (!provider.TryGetContentType(pathProfile, out contentTypeProfile))
+    //    //    contentTypeProfile = "application/octet-stream";
+    //    //if (!provider.TryGetContentType(pathBack, out contentTypeBack))
+    //    //    contentTypeBack = "application/octet-stream";
 
-        //var result = new
-        //{
-        //    ProfileImage = base64Profile,
-        //    BackgroundImage = base64Back
-        //};
-        #endregion
+    //    //var base64Profile = Convert.ToBase64String(imageBytes1);
+    //    //var base64Back = Convert.ToBase64String(imageBytes2);
 
-        return Ok(new {profile= publicImage,profileback = publicBack });
-    }
+    //    //var result = new
+    //    //{
+    //    //    ProfileImage = base64Profile,
+    //    //    BackgroundImage = base64Back
+    //    //};
+    //    #endregion
+
+    //    return Ok(new {profile= publicImage,profileback = publicBack });
+    //}
 
 
     [HttpPost("{username}")]
@@ -172,4 +174,101 @@ public class UserController : ControllerBase
         }
 
     }
+    [HttpPost("backimage")]
+    public async Task<IActionResult> BackImages([FromForm] ProfileCreateDto profilCreate)
+    {
+
+        try
+        {
+            await _userService.BackCreateAsync(profilCreate);
+            return StatusCode(StatusCodes.Status200OK, new ResponseDto { Status = "Success", Message = "BackImage create successfully!" });
+        }
+        catch (NotfoundException ex) { return NotFound(new ResponseDto { Message = ex.Message }); }
+
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    [HttpPost("GetUserGroup")]
+    public async Task<IActionResult> GetUserGroups()
+    {
+        try
+        {
+            return StatusCode(200, await _userService.GetUserGroups());
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                ex.Message
+            });
+        }
+
+    }
+    [HttpPost("IsUserInGroup")]
+    public async Task<IActionResult> IsUserInGroup(int groupId)
+    {
+        try
+        {
+            return StatusCode(200, await _userService.IsUserInGroup(groupId));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                ex.Message
+            });
+        }
+
+    }
+    [HttpPost("InviteUserToGroup")]
+    public async Task<IActionResult> InviteUserToGroup(int groupId)
+    {
+        try
+        {
+            await _userService.InviteUserToGroup(groupId);
+            return StatusCode(200,new ResponseDto { Status="Succesfully",Message="User Invited to Group"});
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                ex.Message
+            });
+        }
+
+    }
+    [HttpDelete("groups/{groupId}")]
+    public async Task<IActionResult> RemoveUserFromGroup(int groupId)
+    {
+        try
+        { 
+            await _userService.RemoveUserFromGroup(groupId);
+            return StatusCode(StatusCodes.Status204NoContent, new ResponseDto { Status = "Successs", Message = "I left this group" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
+        }
+    }
+    [HttpPost("Respond")]
+    public async Task<IActionResult> RespondToGroupInvitation(int groupId, bool acceptInvitation)
+    {
+        try
+        {
+            await _userService.RespondToGroupInvitation(groupId, acceptInvitation);
+            return StatusCode(200, new ResponseDto { Status = "Succesfully", Message = "Respond To Group Invitation" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                ex.Message
+            });
+        }
+
+    }
+
 }

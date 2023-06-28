@@ -24,6 +24,9 @@
   <ItemGroup>
     <Folder Include="Hubs\" />
     <Folder Include="wwwroot\Images\" />
+    <Folder Include="wwwroot\GroupPostImages\" />
+    <Folder Include="wwwroot\StoryVideo\" />
+    <Folder Include="wwwroot\StoryImages\" />
     <Folder Include="wwwroot\UserImages\" />
   </ItemGroup>
 

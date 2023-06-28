@@ -2,12 +2,11 @@
 using Application.DTOs;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Persistance.DataContext;
 using Persistance.Extentions;
 
 namespace Persistance.Concretes;
-
 
 public class UserService : IUserService
 {
@@ -22,9 +21,113 @@ public class UserService : IUserService
         _hostEvnironment = hostEvnironment;
     }
 
+    public async Task BackCreateAsync(ProfileCreateDto profilCreate)
+    {
+        var loginId = _currentUserService.UserId;
+        AppUser? user = await _dbcontext.Users.Include(c=>c.UserImages).FirstOrDefaultAsync(u => u.Id == loginId)
+        ?? throw new NotfoundException();
+        UserImage image = new()
+        {
+            Id = (int)loginId,
+            IsBack = true,
+            CreatedDate = DateTime.Now,
+        };
+
+        
+        if (profilCreate.ImageFile.CheckFileSize(2048)) throw new FileSizeException();
+
+        if (!profilCreate.ImageFile.CheckFileType("image/")) throw new FileTypeException();
+
+
+        string newFileName = await profilCreate.ImageFile.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
+        image.Path = newFileName;
+
+        user.UserImages.Add(image);
+        await _dbcontext.SaveChangesAsync();
+    }
+
     public Task DeleteImage(int imageId)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<List<GetGroupDto>> GetUserGroups()
+    {
+        var loginId = _currentUserService.UserId;
+
+        var groups = await _dbcontext.GroupMemberships
+            .Where(gm => gm.UserId == loginId && gm.Status == Status.Accepted)
+            .Select(gm => gm.Group)
+            .ToListAsync();
+
+        var groupDtos = groups.Select(g => new GetGroupDto
+        {
+            Name = g.Name,
+        }).ToList();
+
+        return groupDtos;
+    }
+
+    public async Task InviteUserToGroup(int groupId)
+    {
+        var loginId = _currentUserService.UserId;
+        bool membershipExists = _dbcontext.GroupMemberships
+            .Any(gm => gm.UserId == loginId && gm.GroupId == groupId);
+
+        if (!membershipExists)
+        {
+            GroupMembership membership = new ()
+            {
+                UserId = (int)loginId,
+                GroupId = groupId,
+                Status = Status.Pending
+            };
+
+            _dbcontext.GroupMemberships.Add(membership);
+            _dbcontext.SaveChanges();
+        }
+    }
+    public async Task RemoveUserFromGroup( int groupId)
+    {
+        var loginId = _currentUserService.UserId;
+        GroupMembership? membership = await _dbcontext.GroupMemberships
+            .FirstOrDefaultAsync(gm => gm.UserId == loginId && gm.GroupId == groupId);
+
+        if (membership != null)
+        {
+            _dbcontext.GroupMemberships.Remove(membership);
+            await _dbcontext.SaveChangesAsync();
+        }
+    }
+    public async Task RespondToGroupInvitation( int groupId, bool acceptInvitation)
+    {
+        var loginId = _currentUserService.UserId;
+        GroupMembership? membership = await _dbcontext.GroupMemberships
+            .FirstOrDefaultAsync(gm => gm.UserId == loginId && gm.GroupId == groupId && gm.Status == Status.Pending);
+
+        if (membership != null)
+        {
+            if (acceptInvitation)
+            {
+                membership.Status = Status.Accepted;
+            }
+            else
+            {
+                membership.Status = Status.Rejected;
+            }
+
+           await _dbcontext.SaveChangesAsync();
+        }
+    }
+
+    public async Task<bool> IsUserInGroup(int groupId)
+    {
+        var loginId = _currentUserService.UserId;
+
+        await _dbcontext.SaveChangesAsync();
+
+        return _dbcontext.GroupMemberships
+            .Any(gm => gm.UserId == loginId && gm.GroupId == groupId && gm.Status == Status.Accepted);
     }
 
     public async Task PrfileCreate(ProfileCreateDto profileCreate)
@@ -35,21 +138,18 @@ public class UserService : IUserService
         UserImage image = new()
         {
             Id = (int)loginId,
-
+            IsProfile = true,
             CreatedDate = DateTime.Now,
         };
-        user = new()
-        {
-            Bio = profileCreate.Bio,
-        };
+       
 
         if (profileCreate.ImageFile.CheckFileSize(2048)) throw new FileSizeException();
 
         if (!profileCreate.ImageFile.CheckFileType("image/")) throw new FileTypeException();
 
 
-        string newFileName = await profileCreate.ImageFile.FileUploadAsync(_hostEvnironment.WebRootPath, "Images");
-        image.ProfileImageName = newFileName;
+        string newFileName = await profileCreate.ImageFile.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
+        image.Path = newFileName;
 
 
     }
@@ -79,6 +179,7 @@ public class UserService : IUserService
     {
         throw new NotImplementedException();
     }
+
 
 
 
@@ -174,7 +275,11 @@ public class UserService : IUserService
 
         return new UserGetDto() { Name = user.Name,Address= user.Address,Surname = user.Surname,Bio = user.Bio,Gender = user.Gender};
     }
-    ////Adminle qarisdirilib buneeee
+
+    public Task RespondToGroupInvitation(int userId, int groupId, bool acceptInvitation)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 

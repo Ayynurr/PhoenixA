@@ -38,20 +38,11 @@ public class FriendService : IFriendService
     public async Task ConfirmFriendAsync(int id)
     {
         var userLoginId = _currentUserService.UserId;
-        var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user is null)
+        UserFriend? friend = await _dbcontext.UserFriends.FirstOrDefaultAsync(u => u.UserId == userLoginId && u.FriendId == id);
+        if (friend is null)
         {
             throw new NotfoundException("User is not found");
         }
-        var userfriends = await _dbcontext.UserFriends.FirstOrDefaultAsync(f => f.UserId == user.Id && f.FriendId == userLoginId);
-        if (userfriends != null)
-        {
-            throw new Exception("Friendly or blocked user");
-        }
-        UserFriend? friend = await _dbcontext.UserFriends.FirstOrDefaultAsync(u => u.UserId == userLoginId && u.FriendId == id);
-       
-      
-
         friend.Status = FriendStatus.Accepted;
 
         await _dbcontext.SaveChangesAsync();
