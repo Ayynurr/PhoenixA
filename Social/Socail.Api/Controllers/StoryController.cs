@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Application;
 using Application.Abstracts;
 using Persistance.DataContext;
-using Persistance.Concretes;
 
 namespace Socail.Api.Controllers;
 
@@ -58,7 +57,7 @@ public class StoryController : ControllerBase
     [HttpGet("stories/{storyId}/image")]
     public async Task<IActionResult> GetStoryImage(int storyId)
     {
-        Story story = await _dbcontext.Stories.FindAsync(storyId);
+        Story? story = await _dbcontext.Stories.FindAsync(storyId);
 
         if (story == null)
         {
@@ -80,18 +79,23 @@ public class StoryController : ControllerBase
     [HttpGet("stories/{storyId}/video")]
     public async Task<IActionResult> GetStoryVideo(int storyId)
     {
-        Story story = await _dbcontext.Stories.FindAsync(storyId) ?? throw new NotfoundException();
+        Story? story = await _dbcontext.Stories.FindAsync(storyId);
+        if (story == null)
+        {
+            return NotFound();
+        }
 
-        string videoPath = Path.Combine(_hostEnvironment.WebRootPath, "StoryVideos", story.VideoName);
-        if (!System.IO.File.Exists(videoPath)) throw new NotfoundException();
+        string videoPath = Path.Combine(_hostEnvironment.WebRootPath, "StoryVideo", story.VideoName);
+        if (!System.IO.File.Exists(videoPath))
+        {
+            return NotFound();
+        }
 
         byte[] videoBytes = await System.IO.File.ReadAllBytesAsync(videoPath);
-
-        string mimeType = "video/mp4"; 
-
-        return File(videoBytes, mimeType);
+        string mimeType = "video/mp4";
+        return File(videoBytes, mimeType, story.VideoName);
     }
-    [HttpPost("archive/{id}")]
+    [HttpGet("archive/{id}")]
     public async Task<ActionResult> ArchiveAsync([FromRoute] int id)
     {
         try
@@ -104,7 +108,7 @@ public class StoryController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
-    [HttpPost("archive/User/{username}")]
+    [HttpGet("archive/User/{username}")]
     public async Task<ActionResult> GetUserAsync([FromRoute] string username)
     {
         try
@@ -117,7 +121,7 @@ public class StoryController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
-    [HttpPost("GetFriends")]
+    [HttpGet("GetFriends")]
     public async Task<ActionResult> GetFriend()
     {
         try
@@ -130,7 +134,7 @@ public class StoryController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
-    [HttpPost("GetAll")]
+    [HttpGet("GetAll")]
     public async Task<ActionResult> GetAll()
     {
         try

@@ -28,6 +28,7 @@ builder.Services.AddIdentity<AppUser, Role>(opt =>
 {
     opt.Password.RequiredLength = 6;
     opt.User.RequireUniqueEmail = true;
+    opt.Password.RequireNonAlphanumeric = false;
 }).AddDefaultTokenProviders().AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>

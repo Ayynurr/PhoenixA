@@ -3,10 +3,6 @@ using Application.DTOs;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Persistance;
-using Persistance.DataContext;
-
 namespace Socail.Api.Controllers;
 
 [Route("api/[controller]")]
@@ -15,17 +11,12 @@ namespace Socail.Api.Controllers;
 public class UserController : ControllerBase
 {
     readonly IUserService _userService;
-    readonly AppDbContext _dbcontext;
-    readonly IWebHostEnvironment _hostEnvironment;
-    readonly ILikeService _likeService;
     readonly ICurrentUserService _currentUserService;
-    public UserController(IUserService userService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, ILikeService likeService, ICurrentUserService currentUserService )
+
+    public UserController(IUserService userService )
     {
         _userService = userService;
-        _dbcontext = dbcontext;
-        _hostEnvironment = hostEnvironment;
-        _likeService = likeService;
-        _currentUserService = currentUserService;
+       
     }
 
 
@@ -81,7 +72,7 @@ public class UserController : ControllerBase
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
-   
+  
     //[HttpPost("/api/Users")]
     //public async Task<IActionResult> UserGet()
     //{
@@ -149,6 +140,7 @@ public class UserController : ControllerBase
     {
         try
         {
+
             return StatusCode(200, await _userService.UserGetByUsername(username));
         }
         catch (Exception ex)
@@ -166,7 +158,7 @@ public class UserController : ControllerBase
         try
         {
             await _userService.DeleteImage(imageId);
-            return StatusCode(StatusCodes.Status204NoContent, new ResponseDto { Status = "Successs", Message = "Post delete successfully" });
+            return StatusCode(StatusCodes.Status204NoContent, new ResponseDto { Status = "Successs", Message = "Image delete successfully" });
         }
         catch (Exception ex)
         {
@@ -174,22 +166,7 @@ public class UserController : ControllerBase
         }
 
     }
-    [HttpPost("backimage")]
-    public async Task<IActionResult> BackImages([FromForm] ProfileCreateDto profilCreate)
-    {
-
-        try
-        {
-            await _userService.BackCreateAsync(profilCreate);
-            return StatusCode(StatusCodes.Status200OK, new ResponseDto { Status = "Success", Message = "BackImage create successfully!" });
-        }
-        catch (NotfoundException ex) { return NotFound(new ResponseDto { Message = ex.Message }); }
-
-        catch (Exception)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
+   
 
     [HttpPost("GetUserGroup")]
     public async Task<IActionResult> GetUserGroups()

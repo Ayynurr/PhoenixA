@@ -9,7 +9,6 @@ public interface IUserService
     Task BackCreateAsync(ProfileCreateDto profilCreate);
     Task<GetProfileDto> ProfileUpdate(ProfileUpdateDto profileUpdate);
     Task<List<GetProfileImage>> UpdateImage(UpdateProfileImage updateImage);
-    Task<GetProfileDto> UserGet();
     Task<UserGetDto> UserGetByUsername(string username);
     Task DeleteImage(int imageId);
     Task InviteUserToGroup(int groupId);
@@ -17,5 +16,6 @@ public interface IUserService
     Task<bool> IsUserInGroup(int groupId);
     Task RemoveUserFromGroup(int groupId);
     Task RespondToGroupInvitation( int groupId, bool acceptInvitation);
-
+    Task AddProfileViewAsync(int profileOwnerId, int visitorId);
+    Task<int> GetProfileViewCountAsync(int profileOwnerId);
 }

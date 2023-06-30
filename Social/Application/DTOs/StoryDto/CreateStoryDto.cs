@@ -5,6 +5,6 @@ namespace Application.DTOs;
 public class CreateStoryDto
 {
     public string Content { get; set; } = null!;
-    public List<IFormFile> Images { get; set; }
+    public IFormFile Image { get; set; }
 
 }

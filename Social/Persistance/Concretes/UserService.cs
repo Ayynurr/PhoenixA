@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Persistance.DataContext;
 using Persistance.Extentions;
-
 namespace Persistance.Concretes;
-
 public class UserService : IUserService
 {
     readonly AppDbContext _dbcontext;
@@ -46,10 +44,6 @@ public class UserService : IUserService
         await _dbcontext.SaveChangesAsync();
     }
 
-    public Task DeleteImage(int imageId)
-    {
-        throw new NotImplementedException();
-    }
 
     public async Task<List<GetGroupDto>> GetUserGroups()
     {
@@ -58,7 +52,7 @@ public class UserService : IUserService
         var groups = await _dbcontext.GroupMemberships
             .Where(gm => gm.UserId == loginId && gm.Status == Status.Accepted)
             .Select(gm => gm.Group)
-            .ToListAsync();
+            .ToListAsync() ?? throw new NotfoundException() ;   
 
         var groupDtos = groups.Select(g => new GetGroupDto
         {
@@ -71,7 +65,7 @@ public class UserService : IUserService
     public async Task InviteUserToGroup(int groupId)
     {
         var loginId = _currentUserService.UserId;
-        bool membershipExists = _dbcontext.GroupMemberships
+        bool membershipExists =  _dbcontext.GroupMemberships
             .Any(gm => gm.UserId == loginId && gm.GroupId == groupId);
 
         if (!membershipExists)
@@ -103,7 +97,7 @@ public class UserService : IUserService
     {
         var loginId = _currentUserService.UserId;
         GroupMembership? membership = await _dbcontext.GroupMemberships
-            .FirstOrDefaultAsync(gm => gm.UserId == loginId && gm.GroupId == groupId && gm.Status == Status.Pending);
+            .FirstOrDefaultAsync(gm => gm.UserId == loginId && gm.GroupId == groupId && gm.Status == Status.Pending) ?? throw new NotfoundException();
 
         if (membership != null)
         {
@@ -118,6 +112,7 @@ public class UserService : IUserService
 
            await _dbcontext.SaveChangesAsync();
         }
+    
     }
 
     public async Task<bool> IsUserInGroup(int groupId)
@@ -175,111 +170,121 @@ public class UserService : IUserService
         };
     }
 
-    public Task<List<GetProfileImage>> UpdateImage(UpdateProfileImage updateImage)
+    public async Task<List<GetProfileImage>> UpdateImage(UpdateProfileImage updateImage)
     {
-        throw new NotImplementedException();
+        var loginId = _currentUserService.UserId;
+        AppUser? user = await _dbcontext.Users.Include(u => u.UserImages).FirstOrDefaultAsync(u => u.Id == loginId) ??
+            throw new NotfoundException();
+        user.UserImages ??= new List<UserImage>();
+        List<GetProfileImage> updatedImages = new List<GetProfileImage>();
+
+        if (updateImage.Image.CheckFileSize(2048))
+            throw new FileTypeException();
+        if (!updateImage.Image.CheckFileType("image/"))
+            throw new FileSizeException();
+
+        string newFileName = await updateImage.Image.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
+
+        var newImage = new UserImage
+        {
+            UserId = (int)loginId,
+            Path = newFileName
+        };
+
+        if (updateImage.IsProfile)
+        {
+            var existingProfileImage = user.UserImages.FirstOrDefault(image => image.IsProfile);
+            if (existingProfileImage != null)
+                existingProfileImage.IsProfile = false;
+
+            newImage.IsProfile = true;
+        }
+
+        if (updateImage.IsBack)
+        {
+            var existingBackImage = user.UserImages.FirstOrDefault(image => image.IsBack);
+            if (existingBackImage != null)
+                existingBackImage.IsBack = false;
+
+            newImage.IsBack = true;
+        }
+
+        user.UserImages.Add(newImage);
+
+        await _dbcontext.SaveChangesAsync();
+
+        updatedImages.Add(new GetProfileImage
+        {
+            Image = newImage.Path,
+            UserId = (int)loginId,
+            ImageUrl = $"https://localhost:7275/api/Post/Images/{newImage.Path}"
+        });
+
+        return updatedImages;
     }
 
-
-
-
-    //public async Task<List<GetProfileImage>> UpdateImage(UpdateProfileImage updateImage)
-    //{
-    //    var loginId = _currentUserService.UserId;
-    //    AppUser? user = await _dbcontext.Users.Include(u=>u.UserImages).FirstOrDefaultAsync(u => u.Id == loginId) ??
-    //      throw new NotfoundException();
-    //    user.Images ??= new List<Image>();
-    //    List<GetProfileImage> updateImages = new();
-
-
-    //    if (updateImage.ProfileImage.CheckFileSize(2048))
-    //        throw new FileTypeException();
-    //    if (!updateImage.ProfileImage.CheckFileType("image/"))
-    //        throw new FileSizeException();
-    //    if (updateImage.BackImage.CheckFileSize(2048))
-    //        throw new FileTypeException();
-    //    if (!updateImage.BackImage.CheckFileType("image/"))
-    //        throw new FileSizeException();
-    //    string newFileNameProfile = await updateImage.ProfileImage.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
-    //    string newFileNameBackraound = await updateImage.BackImage.FileUploadAsync(_hostEvnironment.WebRootPath, "UserImages");
-
-    //    UserImage newImage = new()
-    //    {
-    //        ProfileImageName = newFileNameProfile,
-    //        BackraundImageName = newFileNameBackraound,
-    //        UserId = (int)loginId,
-    //        PathProfile = Path.Combine(_hostEvnironment.WebRootPath, "UserImages"),
-    //        PathBack = Path.Combine(_hostEvnironment.WebRootPath, "UserImages"),
-    //        UpdatedDate = DateTime.Now
-    //    };
-    //    user.UserImages.Add(newImage);
-    //    updateImages.Add(new GetProfileImage
-    //    {
-    //        ProfileImage = newImage.ProfileImageName,
-    //        BackraoundImage = newImage.BackraundImageName,
-    //        UserId = (int)loginId,
-    //        UrlProfile = $"https://localhost:7275/api/Post/Images/{user.UserImages}",
-    //        UrlBackraound = $"https://localhost:7275/api/Post/Images/{user.UserImages}"
-    //    });
-    //    await _dbcontext.SaveChangesAsync();
-    //    return updateImages;
-
-
-    //}
-    //public async Task DeleteImage(int imageId)
-    //{
-    //    var loginId = _currentUserService.UserId;
-    //    AppUser? user = await _dbcontext.Users.Include(u => u.UserImages).FirstOrDefaultAsync(u => u.Id == loginId) ??
-    //        throw new NotfoundException();
-
-    //    UserImage image = user.UserImages.FirstOrDefault(img => img.Id == imageId);
-    //    if (image != null)
-    //    {
-    //        string profileImagePath = Path.Combine(image.PathProfile, image.ProfileImageName);
-    //        string backImagePath = Path.Combine(image.PathBack, image.BackraundImageName);
-
-    //        if (File.Exists(profileImagePath))
-    //        {
-    //            File.Delete(profileImagePath);
-    //        }
-    //        if (File.Exists(backImagePath))
-    //        {
-    //            File.Delete(backImagePath);
-    //        }
-
-    //        user.UserImages.Remove(image);
-
-    //        await _dbcontext.SaveChangesAsync();
-    //    }
-    //}
-
-
-    public Task<GetProfileDto> UserGet()
+    public async Task DeleteImage(int imageId)
     {
-        throw new NotImplementedException();
+        var loginId = _currentUserService.UserId;
+        AppUser? user = await _dbcontext.Users.Include(u => u.UserImages).FirstOrDefaultAsync(u => u.Id == loginId) ??
+            throw new NotfoundException();
+
+        var imageToDelete = user.UserImages.FirstOrDefault(image => image.Id == imageId);
+        if (imageToDelete == null)
+            throw new NotfoundException("Image not found");
+
+        user.UserImages.Remove(imageToDelete);
+
+        
+        if (imageToDelete.IsProfile)
+        {
+            var newProfileImage = user.UserImages.FirstOrDefault(image => image.IsBack);
+            if (newProfileImage != null)
+                newProfileImage.IsProfile = true;
+        }
+
+        if (imageToDelete.IsBack)
+        {
+            var newBackImage = user.UserImages.FirstOrDefault(image => image.IsProfile);
+            if (newBackImage != null)
+                newBackImage.IsBack = true;
+        }
+
+        await _dbcontext.SaveChangesAsync();
     }
-
-    //public async Task<GetProfileDto> UserGet()
-    //{
-    //    List<AppUser>? user = await _dbcontext.Users.ToListAsync() ?? throw new NotfoundException();
-
-
-
-    //    return user;
-    //}
 
     public async Task<UserGetDto> UserGetByUsername(string username)
     {
         AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(s => s.UserName == username) ??
            throw new NotfoundException();
-
+        
         return new UserGetDto() { Name = user.Name,Address= user.Address,Surname = user.Surname,Bio = user.Bio,Gender = user.Gender};
     }
 
-    public Task RespondToGroupInvitation(int userId, int groupId, bool acceptInvitation)
+    public async Task AddProfileViewAsync(int profileOwnerId, int visitorId)
     {
-        throw new NotImplementedException();
+        var view = new ProfileView
+        {
+            ProfileOwnerId = profileOwnerId,
+            VisitorId = visitorId,
+            VisitDate = DateTime.Now
+        };
+
+        _dbcontext.ProfileViews.Add(view);
+        await _dbcontext.SaveChangesAsync();
     }
+
+    public async Task<int> GetProfileViewCountAsync(int profileOwnerId)
+    {
+        var viewCount = await _dbcontext.ProfileViews
+       .Where(view => view.ProfileOwnerId == profileOwnerId)
+       .CountAsync();
+
+        return viewCount;
+    }
+
+   
+   
 }
 
 

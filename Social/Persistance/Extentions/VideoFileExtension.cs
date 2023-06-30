@@ -10,6 +10,13 @@ public static class VideoFileExtension
         var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
         return Array.IndexOf(allowedExtensions, fileExtension) >= 0;
     }
+    //public static bool IsVideoFile(this string file)
+    //{
+    //    string extension = Path.GetExtension(file);
+    //    List<string> videoExtensions = new List<string> { ".mp4", ".avi", ".mov", ".mkv", ".wmv" };
+
+    //    return videoExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+    //}
 
     public static async Task<string> VideoUploadAsync(this IFormFile file, params string[] folders)
     {

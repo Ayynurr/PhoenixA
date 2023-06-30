@@ -45,29 +45,35 @@ public class StoryService : IStoryService
         {
             UserId = (int)loginId,
             Content = story.Content,
-            CreatedDate = DateTime.Now,
+            CreatedDate = DateTime.Now.Date,
         };
-        if (story.Images != null)
+        if (story.Image != null)
         {
-            foreach (var file in story.Images)
-            {
-                if (file.CheckFileSize(2048))
+           
+                if (story.Image.CheckFileSize(2048))
                     throw new FileTypeException();
-                if (!file.CheckFileType("image/"))
+                if (!story.Image.CheckFileType("image/"))
                     throw new FileSizeException();
-                string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "StoryImages");
+                string newFileName = await story.Image.FileUploadAsync(_hostEnvironment.WebRootPath, "StoryImages");
                 newStory.ImageName = newFileName;
-            }
-
-
+           
         }
-        var currentDate = DateTime.Now.Date;
-        var archiveDate = currentDate.AddDays(-1);
-        if (newStory.CreatedDate.Date <= archiveDate)
+        //var currentDate = DateTime.Now.Date;
+        //var archiveDate = currentDate.AddDays(-1);
+        var currentDate = DateTime.Now.Date; 
+        var archiveDate = currentDate.AddDays(1); 
+
+        if (newStory.CreatedDate.Date < archiveDate)
         {
             newStory.IsArchived = true;
-            await _dbcontext.SaveChangesAsync();
         }
+        else
+        {
+            newStory.IsArchived = false; 
+        }
+
+      
+      
 
         _dbcontext.Stories.Add(newStory);
         await _dbcontext.SaveChangesAsync();
@@ -100,12 +106,23 @@ public class StoryService : IStoryService
 
         }
 
+        //var currentDate = DateTime.Now.Date;
+        //var archiveDate = currentDate.AddDays(-1);
+        //if (newStory.CreatedDate.Date <= archiveDate)
+        //{
+        //    newStory.IsArchived = true;
+        //    await _dbcontext.SaveChangesAsync();
+        //}
         var currentDate = DateTime.Now.Date;
-        var archiveDate = currentDate.AddDays(-1);
-        if (newStory.CreatedDate.Date <= archiveDate)
+        var archiveDate = currentDate.AddDays(1);
+
+        if (newStory.CreatedDate.Date < archiveDate)
+        {
+            newStory.IsArchived = false;
+        }
+        else
         {
             newStory.IsArchived = true;
-            await _dbcontext.SaveChangesAsync();
         }
 
 

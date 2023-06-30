@@ -10,4 +10,5 @@ public interface IStoryService
     Task<List<StoryGetDto>> GetFriendAsync();
     Task DeleteAsync(int id);
     Task<List<StoryGetDto>> ArchiveAsync(int id);
+
 }

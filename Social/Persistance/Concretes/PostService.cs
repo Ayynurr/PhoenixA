@@ -2,6 +2,7 @@
 using Application.DTOs;
 using Application.DTOs.ImagePostDto;
 using Application.DTOs.PostDto;
+using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Hosting;
 using Persistance.DataContext;
@@ -19,6 +20,7 @@ public class PostService : IPostService
         _currentUserService = userService;
         _hostEnvironment = hostEnvironment;
     }
+
 
     public async Task<PostGetDto> CreateAsync(PostCreateDto post)
     {
@@ -42,9 +44,12 @@ public class PostService : IPostService
                 if (!file.CheckFileType("image/"))
                     throw new FileSizeException();
                 string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "Images");
-                newPost.ImageName = newFileName;
-            }
+              
+                //newPost.ImageName = newFileName;
+                newPost.Images.Add(new Image { Path = Path.Combine(_hostEnvironment.WebRootPath, "Images"), ImgName=newFileName});
 
+               newPost.ImageName = newFileName;
+            }
             #region 
             //{
             //    AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == post.UserId)
@@ -75,31 +80,65 @@ public class PostService : IPostService
             //    }
             #endregion
         }
+            List<ImageGetDto> imageDtos = newPost.Images.Select(i => new ImageGetDto()
+            {
+                Url = $"https://localhost:7046/api/Hotel/Images/{i.ImgName}"
+            }).ToList();
 
         _dbcontext.Posts.Add(newPost);
         await _dbcontext.SaveChangesAsync();
-        return new PostGetDto() { Content = newPost.Content, Id = newPost.Id, };
+        return new PostGetDto() { Content = newPost.Content, Id = newPost.Id, Images = imageDtos };
 
     }
 
     public async Task<PostGetDto> GetByIdAsync(int id)
     {
-        Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == id) ??
-           throw new NotfoundException();
+        Post? post = await _dbcontext.Posts.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id)
+            ?? throw new NotfoundException();
 
-        return new PostGetDto() { Content = post.Content, Id = post.Id };
+        List<ImageGetDto> imageDtos = post.Images.Select(i => new ImageGetDto()
+        {
+          
+            Url = $"https://localhost:7046/api/Hotel/Images/{i.ImgName}"
+        }).ToList();
 
+        
+        PostGetDto postGetDto = new PostGetDto()
+        {
+            Content = post.Content,
+            Id = post.Id,
+            Images = imageDtos
+        };
+
+        
+        return postGetDto;
     }
     public async Task<List<PostGetDto>> GetAllAsync()
     {
-        var posts = await _dbcontext.Posts
+        var posts = await _dbcontext.Posts.Include(i=>i.Images)
             .Select(s => new PostGetDto { Id = s.Id, Content = s.Content })
             .ToListAsync();
+
+        foreach (var post in posts)
+        {
+            var images = await _dbcontext.Images
+                .Where(i => i.PostId == post.Id)
+                .Select(i => new ImageGetDto
+                {
+                 
+                    Url = $"https://localhost:7046/api/Hotel/Images/{i.ImgName}"
+                })
+                .ToListAsync();
+
+            post.Images.AddRange(images);
+        }
+
         return posts;
     }
+
     public async Task<PostGetDto> UpdateAsync(PostUpdateDto post, int id)
     {
-        Post? newPost = await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == id) ??
+        Post? newPost = await _dbcontext.Posts.Include(i=>i.Images).FirstOrDefaultAsync(s => s.Id == id) ??
            throw new NotfoundException();
         newPost.Content = post.Content;
         newPost.Id = id;
@@ -135,8 +174,7 @@ public class PostService : IPostService
             newPost.Images.Add(newImage);
             updateImages.Add(new ImageGetDto
             {
-                ImageName = newImage.ImgName,
-                PostId = postId,
+               
                 Url = $"https://localhost:7275/api/Post/Images/{newPost.ImageName}"
             });
         }

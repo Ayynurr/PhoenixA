@@ -27,11 +27,11 @@ public class FriendController : ControllerBase
         try
         {
             await _friendService.ConfirmFriendAsync(id);
-            return StatusCode(StatusCodes.Status204NoContent, new ResponseDto { Status = "Successs", Message = "Confirm successfully" });
+            return StatusCode(StatusCodes.Status200OK, new ResponseDto { Status = "Successs", Message = "Confirm successfully" });
         }
         catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
     [HttpPost("add/{id}")]
@@ -40,11 +40,11 @@ public class FriendController : ControllerBase
         try
         {
             await _friendService.AddFriendAsync(id);
-            return StatusCode(StatusCodes.Status204NoContent, new ResponseDto { Status = "Successs", Message = "Add Friend successfully" });
+            return StatusCode(StatusCodes.Status200OK, new ResponseDto { Status = "Successs", Message = "Add Friend successfully" });
         }
         catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
     [HttpDelete("delete/{id}")]
@@ -99,7 +99,7 @@ public class FriendController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
-    [HttpPost("all")]
+    [HttpGet("all")]
     public async Task<ActionResult> UserGetFriends()
     {
         try
@@ -108,10 +108,10 @@ public class FriendController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
-    [HttpPost("allRequest")]
+    [HttpGet("allRequest")]
     public async Task<ActionResult> UserRequestFriends()
     {
         try
@@ -120,7 +120,7 @@ public class FriendController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
 

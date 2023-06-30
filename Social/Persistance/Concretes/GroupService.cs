@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 using Persistance.Extentions;
 using Persistance.DataContext;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 
 namespace Persistance;
 
@@ -141,7 +140,7 @@ public class GroupService : IGroupService
         GroupPostDto postDto = new()
         {
             PostId = post.Id,
-            GroupId = post.GroupId,
+            GroupId = (int)post.GroupId,
             UserId = post.UserId,
             Content = post.Content,
             CreatedAt = post.CreatedDate
@@ -184,7 +183,7 @@ public class GroupService : IGroupService
         GroupPostDto postDto = new ()
         {
             PostId = post.Id,
-            GroupId = post.GroupId,
+            GroupId = (int)post.GroupId,
             UserId = post.UserId,
             Content = post.Content,
             CreatedAt = post.CreatedDate,

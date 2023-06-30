@@ -16,28 +16,41 @@ public class CommentController : ControllerBase
     readonly ICommentService _commentService;
     readonly AppDbContext _dbcontext;
     readonly ILikeService _likeService;
-    public CommentController(ICommentService commentService, AppDbContext dbcontext, ILikeService likeService )
+    public CommentController(ICommentService commentService, AppDbContext dbcontext, ILikeService likeService)
     {
         _commentService = commentService;
         _dbcontext = dbcontext;
         _likeService = likeService;
     }
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CommentCreateDto comment)
+    private string GetInnermostExceptionMessage(Exception ex)
+    {
+        var innerException = ex;
+        while (innerException.InnerException != null)
+        {
+            innerException = innerException.InnerException;
+        }
+
+        return innerException.Message;
+    }
+    [HttpPost("{postId}")]
+    public async Task<IActionResult> Create([FromRoute] int postId,[FromBody] CommentCreateDto comment)
     {
         try
         {
-            return Ok(await _commentService.CreateAsync(comment));
+            return Ok(await _commentService.CreateAsync(postId,comment));
         }
-        catch (NotfoundException ex) { return NotFound(new ResponseDto { Message = ex.Message }); }
-
-        catch (Exception)
+        catch (NotfoundException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError);
+            return NotFound(new ResponseDto { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            var innerExceptionMessage = GetInnermostExceptionMessage(ex);
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Message = "Sunucu hatası: " + innerExceptionMessage });
         }
     }
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete([FromRoute] int id)
+    public async Task<IActionResult> Delete(int id)
     {
         
         try
@@ -53,7 +66,7 @@ public class CommentController : ControllerBase
     }
   
     [HttpPost("/api/Comment/Like/{commentId}")]
-    public async Task<IActionResult> LikeComment([FromRoute] int commentId)
+    public async Task<IActionResult> LikeComment(int commentId)
     {
         try
         {

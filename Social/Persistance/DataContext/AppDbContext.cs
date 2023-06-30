@@ -20,6 +20,7 @@ public class AppDbContext : IdentityDbContext<AppUser,Role,int>
     public DbSet<UserFriend> UserFriends { get; set; }
     public DbSet<Group> Groups { get; set; }
     public DbSet<GroupMembership> GroupMemberships { get; set; }
+    public DbSet<ProfileView> ProfileViews { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
      

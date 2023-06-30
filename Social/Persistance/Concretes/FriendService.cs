@@ -19,6 +19,11 @@ public class FriendService : IFriendService
     public async Task AddFriendAsync(int id)
     {
         var userLoginId = _currentUserService.UserId;
+        if (userLoginId == id)
+        {
+            throw new Exception("You cannot send friend request to yourself.");
+        }
+
         var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotfoundException("User is not found");
         var userfriends = await _dbcontext.UserFriends.FirstOrDefaultAsync(f => f.UserId == user.Id && f.FriendId == userLoginId);
         if (userfriends != null)

@@ -17,6 +17,7 @@ public static class FileExtension
     {
         string newFileName = Guid.NewGuid().ToString() + file.FileName;
         string pathFolder = Path.Combine(folders);
+        //string pathFolder = Path.Combine(folders[0], folders[1]);
         string path = Path.Combine(pathFolder, newFileName);
         using (FileStream stream = new(path, FileMode.CreateNew))
         {

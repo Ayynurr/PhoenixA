@@ -6,8 +6,13 @@ public class GroupConfigure : IEntityTypeConfiguration<Group>
     {
 
         builder.HasKey(g => g.Id);
-        builder.Property(g => g.Name).IsRequired().HasMaxLength(100);
 
+        builder.Property(g => g.Name)
+               .IsRequired()
+               .HasMaxLength(100);
+
+        builder.HasIndex(g => g.Name)
+               .IsUnique();
 
 
         builder.HasMany(g => g.Posts)

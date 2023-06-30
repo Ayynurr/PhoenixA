@@ -73,7 +73,8 @@ namespace Persistance.DataContext.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -170,7 +171,7 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("Domain.Entities.Group", b =>
@@ -208,7 +209,10 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Groups", (string)null);
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Groups");
                 });
 
             modelBuilder.Entity("Domain.Entities.GroupMembership", b =>
@@ -227,7 +231,7 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("GroupMemberships", (string)null);
+                    b.ToTable("GroupMemberships");
                 });
 
             modelBuilder.Entity("Domain.Entities.Image", b =>
@@ -276,7 +280,7 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Images", (string)null);
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("Domain.Entities.Post", b =>
@@ -297,7 +301,7 @@ namespace Persistance.DataContext.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("GroupId")
+                    b.Property<int?>("GroupId")
                         .HasColumnType("int");
 
                     b.Property<string>("ImageName")
@@ -329,6 +333,28 @@ namespace Persistance.DataContext.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Posts", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.ProfileView", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("ProfileOwnerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("VisitDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("VisitorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProfileViews");
                 });
 
             modelBuilder.Entity("Domain.Entities.Role", b =>
@@ -385,7 +411,7 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Settings", (string)null);
+                    b.ToTable("Settings");
                 });
 
             modelBuilder.Entity("Domain.Entities.Story", b =>
@@ -433,7 +459,7 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Stories", (string)null);
+                    b.ToTable("Stories");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserFriend", b =>
@@ -508,7 +534,7 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserImages", (string)null);
+                    b.ToTable("UserImages");
                 });
 
             modelBuilder.Entity("Domain.LikeComment", b =>
@@ -553,7 +579,7 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LikeComments", (string)null);
+                    b.ToTable("LikeComments");
                 });
 
             modelBuilder.Entity("Domain.LikePost", b =>
@@ -599,7 +625,7 @@ namespace Persistance.DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LikePosts", (string)null);
+                    b.ToTable("LikePosts");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -770,8 +796,7 @@ namespace Persistance.DataContext.Migrations
                     b.HasOne("Domain.Entities.Group", "Group")
                         .WithMany("Posts")
                         .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entities.AppUser", "User")
                         .WithMany("Posts")

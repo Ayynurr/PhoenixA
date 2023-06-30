@@ -20,14 +20,14 @@ public class EmailService : IEmailService
             Host = "smtp.gmail.com",
             Port = 587,
             EnableSsl = true,
-            Credentials = new NetworkCredential(_configuration["Email:aynurramazanova56@gmail.com"], _configuration["Email:gvtynoersuxvoilk"])
+            Credentials = new NetworkCredential(_configuration["Email:From"], _configuration["Email:AppPassword"])
         };
         _smtpClient = smtpClient;
     }
 
     public void SendMessage(string message, string subject, string to)
     {
-        MailMessage newMessage = new MailMessage(_configuration["Email:aynurramazanova56@gmail.com"], to)
+        MailMessage newMessage = new MailMessage(_configuration["Email:From"], to)
         {
             Subject = subject,
             Body = message,

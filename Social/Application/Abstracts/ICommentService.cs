@@ -4,7 +4,7 @@ namespace Application.Abstracts;
 
 public interface ICommentService
 {
-    Task<CommentGetDto> CreateAsync(CommentCreateDto comment);
+    Task<CommentGetDto> CreateAsync(int postId, CommentCreateDto commentDto);
     Task CommentDeleteAsync(int id);
     //Task<List<CommentGetDto>> GetPostComment(int id);
 

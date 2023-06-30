@@ -23,18 +23,25 @@ public class CommentService : ICommentService
         await _dbcontext.SaveChangesAsync();
     }
 
-    public async Task<CommentGetDto> CreateAsync(CommentCreateDto commentDto)
+    public async Task<CommentGetDto> CreateAsync(int postId, CommentCreateDto commentDto)
     {
-        var loginId = _currentUserService.UserId;
-        AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == loginId)
-        ?? throw new NotfoundException("User Not Found");
+        Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(i=>i.Id==postId);
+        if (post == null)
+        {
+            throw new NotfoundException("Post Not Found");
+        }
 
-        Comment? newComment = new Comment
+        var loginId = _currentUserService.UserId;
+        AppUser user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == loginId)
+            ?? throw new NotfoundException("User Not Found");
+
+        Comment newComment = new Comment
         {
             Content = commentDto.Content,
             UserId = (int)loginId,
             CreatedDate = DateTime.UtcNow,
-            CreatedBy = user.Name
+            CreatedBy = user.Name,
+            Post = post
         };
 
         if (commentDto.ReplyCommentId.HasValue)
@@ -46,19 +53,18 @@ public class CommentService : ICommentService
             }
         }
 
-
         _dbcontext.Comments.Add(newComment);
         await _dbcontext.SaveChangesAsync();
 
-
-        return new CommentGetDto { Content=newComment.Content,Id = newComment.Id};
+        return new CommentGetDto { Content = newComment.Content, Id = newComment.Id };
     }
+
 
     //public async Task<List<CommentGetDto>> GetPostComment(int id)
     //{
     //    var loginId = _currentUserService.UserId;
     //    Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(i=>i.Id == id && i.UserId == loginId) ?? throw new NotfoundException();
-        
+
     //}
 }
 
