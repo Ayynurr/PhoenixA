@@ -13,7 +13,6 @@ public class StoryService : IStoryService
     readonly ICurrentUserService _currentUserService;
     readonly AppDbContext _dbcontext;
     readonly IWebHostEnvironment _hostEnvironment;
-
     public StoryService(ICurrentUserService currentUserService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment)
     {
         _currentUserService = currentUserService;
@@ -72,8 +71,7 @@ public class StoryService : IStoryService
             newStory.IsArchived = false; 
         }
 
-      
-      
+
 
         _dbcontext.Stories.Add(newStory);
         await _dbcontext.SaveChangesAsync();

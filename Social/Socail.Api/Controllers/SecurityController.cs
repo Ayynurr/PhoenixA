@@ -8,7 +8,7 @@ namespace Socail.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles ="SuperAdmin")]
-[Area("SuperAdmin")]
+//[Area("SuperAdmin")]
 public class SecurityController : ControllerBase
 {
     readonly ISecurityService _securityService;

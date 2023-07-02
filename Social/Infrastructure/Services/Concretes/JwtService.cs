@@ -1,12 +1,12 @@
 ﻿using Domain.Entities;
-using Infrastructure.Services.Interface;
+using Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace Infrastructure.Services.Conretes;
+namespace Infrastructure.Services;
 
 public class JwtService : IJwtService
 {

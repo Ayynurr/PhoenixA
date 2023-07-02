@@ -1,6 +1,6 @@
 ﻿using Application.DTOs.CommentDto.AuthDto;
 using Domain.Entities;
-using Infrastructure.Services.Interface;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -52,7 +52,7 @@ public class AuthController : ControllerBase
         //}
 
         string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        string? link = Url.Action("ConfirmUser", "Account", new { email = user.Email, token = token }, HttpContext.Request.Scheme);
+        string? link = Url.Action("ConfirmUser", "Auth", new { email = user.Email, token = token }, HttpContext.Request.Scheme);
 
         _emailService.SendMessage(token, "Confirm", user.Email);
         return Ok(new
@@ -105,7 +105,7 @@ public class AuthController : ControllerBase
         return Ok(new { Token = encodedToken });
     }
 
-
+    #region Roles
     //[HttpPost("createRoles")]
     //public async Task CreateRoles()
     //{
@@ -120,7 +120,8 @@ public class AuthController : ControllerBase
     //        }
     //    }
     //}
-  
+    #endregion
+
     [HttpPost("ConfirmUser")]
     public async Task<IActionResult> ConfirmUser(string token, string email)
     {
@@ -139,59 +140,74 @@ public class AuthController : ControllerBase
         return Ok("Email confirmed successfully.");
     }
 
-   
+
+    //[HttpPost("forgetPassword")]
+    //public async Task<IActionResult> ForgotPassword([FromForm] ForgetPasswordDto forgotPassword)
+    //{
+    //    var user = await _userManager.FindByEmailAsync(forgotPassword.Email);
+    //    if (user is null)
+    //    {
+    //        return BadRequest("User not found.");
+    //    }
+
+    //    string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+    //    string? link = Url.Action("ResetPassword", "Auth", new { email = user.Email, token = token }, HttpContext.Request.Scheme);
+    //    string message = $"Please reset your password by clicking the following link: {link}";
+    //    string subject = "Password Reset";
+    //    _emailService.SendMessage(message, subject, user.Email);
+    //    return Ok();
+    //}
+
+    //[HttpPost("reset-password")]
+    //public async Task<IActionResult> ResetPassword([FromForm] ResetPasswordDto resetPasswordDto)
+    //{
+    //    var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
+    //    if (user is null)
+    //    {
+    //        return NotFound();
+    //    }
+
+    //    var resetPasswordResult = await _userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.NewPassword);
+    //    if (!resetPasswordResult.Succeeded)
+    //    {
+    //        return BadRequest(resetPasswordResult.Errors);
+    //    }
+
+    //    return Ok();
+    //}
     [HttpPost("forgetPassword")]
-    public async Task<IActionResult> ForgotPassword(ForgetPasswordDto forgotPassword)
+    public async Task<IActionResult> ForgotPassword([FromForm] ForgetPasswordDto forgotPassword)
     {
         var user = await _userManager.FindByEmailAsync(forgotPassword.Email);
         if (user is null)
+        {
             return BadRequest("User not found.");
+        }
 
         string token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        string link = Url.Action("ResetPassword", "Account", new { userId = user.Id, token });
+        string? link = Url.Action("ResetPassword", "Auth", new { UserId=user.Id, token = token }, HttpContext.Request.Scheme);
+        string message = $"Please reset your password by clicking the following link: {link}";
+        string subject = "Password Reset";
+        _emailService.SendMessage(message, subject, user.Email);
         return Ok(link);
     }
-
-
-    //[HttpPost("resetp")]
-    //public async Task<IActionResult> ResetPassword(ResetPasswordDto resetPassword, string userId, string token)
-    //{
-    //    if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
-    //        return BadRequest("User ID and token are required.");
-
-    //    if (!ModelState.IsValid)
-    //        return BadRequest(ModelState);
-
-    //    var user = await _userManager.FindByIdAsync(userId);
-    //    if (user is null)
-    //        throw new Exception("Not Found");
-
-    //    var result = await _userManager.ResetPasswordAsync(user, token, resetPassword.ConfirmPassword);
-    //    if (result.Succeeded)
-    //        return RedirectToAction(nameof(Login));
-
-    //    return BadRequest("Failed to reset password.");
-    //}
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+    public async Task<IActionResult> ResetPassword([FromForm] ResetPasswordDto resetPasswordDto,string UserId,string token)
     {
-        var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
-        if (user == null)
+        var user = await _userManager.FindByIdAsync(UserId);
+        if (user is null)
         {
-            
             return NotFound();
         }
-
-      
-        var resetPasswordResult = await _userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.NewPassword);
-        if (!resetPasswordResult.Succeeded)
+        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await _userManager.ResetPasswordAsync(user, resetToken, resetPasswordDto.NewPassword);
+        if (!result.Succeeded)
         {
-            return BadRequest(resetPasswordResult.Errors);
+            return BadRequest();
         }
-
-      
 
         return Ok();
     }
+
 
 }

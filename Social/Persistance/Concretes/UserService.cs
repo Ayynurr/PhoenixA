@@ -2,6 +2,7 @@
 using Application.DTOs;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistance.DataContext;
 using Persistance.Extentions;
@@ -11,13 +12,33 @@ public class UserService : IUserService
     readonly AppDbContext _dbcontext;
     readonly ICurrentUserService _currentUserService;
     readonly IWebHostEnvironment _hostEvnironment;
+    readonly UserManager<AppUser> _userManager;
 
-    public UserService(AppDbContext dbcontext, ICurrentUserService currentUserService, IWebHostEnvironment hostEvnironment)
+    public UserService(AppDbContext dbcontext, ICurrentUserService currentUserService, IWebHostEnvironment hostEvnironment, UserManager<AppUser> userManager )
     {
         _dbcontext = dbcontext;
         _currentUserService = currentUserService;
         _hostEvnironment = hostEvnironment;
+        _userManager = userManager;
     }
+    public List<AppUserDto> GetUsersWithBirthdayToday()
+    {
+        DateTime today = DateTime.Today;
+
+        List<AppUser> usersWithBirthdayToday = _userManager.Users
+            .Where(u => u.BirthDate.Day == today.Day && u.BirthDate.Month == today.Month)
+            .ToList();
+
+        List<AppUserDto> usersWithBirthdayTodayDto = usersWithBirthdayToday.Select(u => new AppUserDto
+        {
+            Name = u.Name,
+            Email = u.Email,
+            Birthdate = u.BirthDate
+        }).ToList();
+
+        return usersWithBirthdayTodayDto;
+    }
+
 
     public async Task BackCreateAsync(ProfileCreateDto profilCreate)
     {
@@ -283,7 +304,6 @@ public class UserService : IUserService
         return viewCount;
     }
 
-   
    
 }
 

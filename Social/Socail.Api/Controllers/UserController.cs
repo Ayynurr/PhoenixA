@@ -1,8 +1,12 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
+using Domain.Entities;
 using Domain.Exceptions;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
 namespace Socail.Api.Controllers;
 
 [Route("api/[controller]")]
@@ -11,13 +15,33 @@ namespace Socail.Api.Controllers;
 public class UserController : ControllerBase
 {
     readonly IUserService _userService;
-    readonly ICurrentUserService _currentUserService;
+     readonly IBackraundEmailService _backgroundEmailService;
 
-    public UserController(IUserService userService )
+
+    public UserController(IUserService userService, IBackraundEmailService backgroundEmailService)
     {
         _userService = userService;
-       
+        _backgroundEmailService = backgroundEmailService;
     }
+    [HttpGet("send-birthday-messages")]
+    public async Task<IActionResult> SendBirthdayMessages()
+    {
+        try
+        {
+            List<AppUserDto> usersWithBirthdayToday = _userService.GetUsersWithBirthdayToday();
+
+            string message = "Happy birthday!";
+
+            await _backgroundEmailService.SendBirthdayMessagesAsync(usersWithBirthdayToday.Select(u => u.Email).ToList(), message);
+
+            return Ok("Birthday messages sent successfully");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error sending birthday messages: {ex.Message}");
+        }
+    }
+   
 
 
     [HttpPost("/api/User/CreateProfile")]

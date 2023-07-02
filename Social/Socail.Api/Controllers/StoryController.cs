@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Application;
 using Application.Abstracts;
 using Persistance.DataContext;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Infrastructure.Services;
 
 namespace Socail.Api.Controllers;
 
@@ -18,12 +20,14 @@ public class StoryController : ControllerBase
     readonly ICurrentUserService _currentUserService;
     readonly AppDbContext _dbcontext;
     readonly IWebHostEnvironment _hostEnvironment;
-    public StoryController(IStoryService storyService, ICurrentUserService currentUserService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment)
+    readonly IArchiveJob _archiveJob;
+    public StoryController(IStoryService storyService, ICurrentUserService currentUserService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, IArchiveJob archiveJob)
     {
         _storyService = storyService;
         _currentUserService = currentUserService;
         _dbcontext = dbcontext;
         _hostEnvironment = hostEnvironment;
+        _archiveJob = archiveJob;
     }
 
     [HttpPost("video")]
@@ -31,6 +35,8 @@ public class StoryController : ControllerBase
     {
         try
         {
+
+            //_archiveJob.ScheduleArchiveJob();
             return Ok(await _storyService.CreateVideoAsync(story));
         }
         catch (NotfoundException ex) { return NotFound(new ResponseDto { Message = ex.Message }); }
@@ -45,6 +51,7 @@ public class StoryController : ControllerBase
     {
         try
         {
+            //_archiveJob.ScheduleArchiveJob();
             return Ok(await _storyService.CreateStoryImageAsync(story));
         }
         catch (NotfoundException ex) { return NotFound(new ResponseDto { Message = ex.Message }); }
@@ -161,4 +168,5 @@ public class StoryController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
+   
 }

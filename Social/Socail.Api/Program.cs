@@ -1,8 +1,7 @@
 ﻿using Application;
 using Application.Abstracts;
 using Domain.Entities;
-using Infrastructure.Services.Conretes;
-using Infrastructure.Services.Interface;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +14,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -41,6 +39,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ClockSkew = TimeSpan.FromSeconds(0)
     };
 });
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
@@ -52,6 +51,9 @@ builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IStoryService, StoryService>();  
 builder.Services.AddScoped<IGroupService,GroupService>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
+builder.Services.AddScoped<IBackraundEmailService, BackraundEmailService>();
+builder.Services.AddScoped<IArchiveService, ArchiveService>();
+builder.Services.AddScoped<IArchiveJob, ArchiveJob>();
 
 builder.Services.AddSwaggerGen(opt =>
 {
@@ -92,7 +94,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

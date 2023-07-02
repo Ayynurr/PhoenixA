@@ -18,4 +18,5 @@ public interface IUserService
     Task RespondToGroupInvitation( int groupId, bool acceptInvitation);
     Task AddProfileViewAsync(int profileOwnerId, int visitorId);
     Task<int> GetProfileViewCountAsync(int profileOwnerId);
+    List<AppUserDto> GetUsersWithBirthdayToday();
 }
