@@ -141,7 +141,7 @@ public class GroupController : ControllerBase
         }
     }
 
-
+    #region First
 
     //[HttpPost("Create")]
     //public async Task<IActionResult> CreateGroup(UserGroupDto groupDTO)
@@ -203,4 +203,5 @@ public class GroupController : ControllerBase
     //        return StatusCode(StatusCodes.Status500InternalServerError);
     //    }
     //}
+    #endregion
 }

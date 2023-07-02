@@ -92,5 +92,18 @@ public class CommentController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
+    [HttpGet("{postId}")]
+    public async Task<IActionResult> GetComments(int postId)
+    {
+        try
+        {
+            return StatusCode(StatusCodes.Status200OK, await _commentService.GetPostComment(postId));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
+        }
+    }
+
 }
 

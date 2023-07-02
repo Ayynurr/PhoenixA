@@ -51,6 +51,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IStoryService, StoryService>();  
 builder.Services.AddScoped<IGroupService,GroupService>();
+builder.Services.AddScoped<ISecurityService, SecurityService>();
 
 builder.Services.AddSwaggerGen(opt =>
 {

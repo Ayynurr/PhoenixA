@@ -129,20 +129,19 @@ public class FriendService : IFriendService
     {
         var userLoginId = _currentUserService.UserId;
         var friends = await _dbcontext.UserFriends
-            .Where(u => u.UserId == userLoginId && u.Status == FriendStatus.Accepted)
-            .Include(u => u.Friend)
+            .Where(u => (u.UserId == userLoginId || u.FriendId == userLoginId) && u.Status == FriendStatus.Accepted)
+            .Select(u => u.UserId == userLoginId ? u.Friend : u.User)
             .Select(u => new UserGetDto
             {
-                Name = u.Friend.Name,
-                Surname = u.Friend.Surname,
-                BirthDate = u.Friend.BirthDate,
-                Bio = u.Friend.Bio,
-                Gender = u.Friend.Gender,
-                Address = u.Friend.Address
+                username = u.UserName,
+                Bio = u.Bio,
+                Address = u.Address
             })
-            .ToListAsync();
+              .ToListAsync();
 
         return friends;
+
+
     }
 
     public async Task<List<UserGetDto>> GetRequestFriends()
@@ -156,11 +155,8 @@ public class FriendService : IFriendService
                 user => user.Id,
                 (friend, user) => new UserGetDto
                 {
-                    Name = user.Name,
-                    Surname = user.Surname,
-                    BirthDate = user.BirthDate,
+                    username = user.UserName,
                     Bio = user.Bio,
-                    Gender = user.Gender,
                     Address = user.Address
                 })
             .ToListAsync();

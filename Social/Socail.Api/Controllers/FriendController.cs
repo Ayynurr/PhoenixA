@@ -60,7 +60,7 @@ public class FriendController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
-    [HttpDelete("block/{id}")]
+    [HttpPut("block/{id}")]
     public async Task<ActionResult> FriendBlock(int id)
     {
         try
@@ -73,7 +73,7 @@ public class FriendController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
-    [HttpPost("unblock/{id}")]
+    [HttpPut("unblock/{id}")]
     public async Task<ActionResult> FriendUnblock(int id)
     {
         try
@@ -86,7 +86,7 @@ public class FriendController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway, new ResponseDto { Status = "Error", Message = ex.Message });
         }
     }
-    [HttpDelete("declined/{id}")]
+    [HttpPut("declined/{id}")]
     public async Task<ActionResult> Declined(int id)
     {
         try

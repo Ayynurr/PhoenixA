@@ -17,11 +17,12 @@ public class AuthController : ControllerBase
     readonly IConfiguration _configuration;
     readonly RoleManager<Role> _roleManager;
     readonly IEmailService _emailService;
-    public AuthController(UserManager<AppUser> userManager, IConfiguration confifuration, RoleManager<Role> roleManager)
+    public AuthController(UserManager<AppUser> userManager, IConfiguration confifuration, RoleManager<Role> roleManager, IEmailService emailService)
     {
         _userManager = userManager;
         _configuration = confifuration;
         _roleManager = roleManager;
+        _emailService = emailService;
     }
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto register)
@@ -43,48 +44,24 @@ public class AuthController : ControllerBase
             return BadRequest(result.Errors);
         }
 
- 
-        string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        //IdentityResult roleResult = await _userManager.AddToRoleAsync(user, "SuperAdmin");
+        //if (!roleResult.Succeeded)
+        //{
+        //    var errors = roleResult.Errors.Select(error => error.Description).ToList();
+        //    return BadRequest(new { errors });
+        //}
 
-        string confirmationLink = $"https://localhost:7275//confirm-email?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email)}";
-        _emailService.SendMessage("Please confirm your email address by clicking the link below: " + confirmationLink, "Email Confirmation", user.Email);
+        string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        string? link = Url.Action("ConfirmUser", "Account", new { email = user.Email, token = token }, HttpContext.Request.Scheme);
+
+        _emailService.SendMessage(token, "Confirm", user.Email);
         return Ok(new
         {
             user.Name,
             user.Email
         });
     }
-    //[HttpPost("register")]
-    //public async Task<IActionResult> Register([FromBody] RegisterDto register)
-    //{
-    //    AppUser user = new()
-    //    {
-    //        Name = register.Firstname,
-    //        Surname = register.Lastname,
-    //        Email = register.Email,
-    //        UserName = register.Username,
-    //        Gender = register.Gender,
-    //        Address = register.Address,
-    //        BirthDate = register.Birthday
-    //    };
-    //    IdentityResult result = await _userManager.CreateAsync(user, register.Password);
-    //    if (!result.Succeeded)
-    //    {
-    //        return BadRequest(result.Errors);
-    //    }
-    //    //email a
-    //    //
-    //    string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-    //    var link = Url.Action("ConfirmUser", "Account", new { token = token, email = user.Email });
-    //    _emailService.SendMessage($"<a href=\"{link}\"> click for email confirmation</a>", "Confirmation link", register.Email);
-    //    //await _userManager.AddToRoleAsync(user, Roles.User.ToString());
-    //    return Ok(new
-    //    {
-    //        user.Name,
-    //        user.Email
-    //    });
 
-    //}
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto login)
     {
@@ -129,54 +106,40 @@ public class AuthController : ControllerBase
     }
 
 
-//[HttpPost("createRoles")]
-//public async Task CreateRoles()
-//{
-//    foreach (var item in Enum.GetValues(typeof(Roles)))
-//    {
-//        if (!(await _roleManager.RoleExistsAsync(item.ToString())))
-//        {
-//            await _roleManager.CreateAsync(new IdentityRole
-//            {
-//                Name = item.ToString()
-//            });
-//        }
-//    }
-//}
-//[HttpPost("confirm")]
-//    public async Task<IActionResult> ConfirmUser(string email, string token)
-//    {
-//        AppUser user = await _userManager.FindByEmailAsync(email);
-//        if (user == null) throw new Exception("user not found");
-
-
-//        IdentityResult identityResult = await _userManager.ConfirmEmailAsync(user, token);
-//        if (!identityResult.Succeeded)
-//        {
-//            ModelState.AddModelError("", "Token confirm incorrect");
-//            return BadRequest(identityResult.Errors);
-//        }
-
-//        return Ok();
-//    }
-    [HttpGet("ConfirmUser")]
+    //[HttpPost("createRoles")]
+    //public async Task CreateRoles()
+    //{
+    //    foreach (var item in Enum.GetValues(typeof(Roles)))
+    //    {
+    //        if (!(await _roleManager.RoleExistsAsync(item.ToString())))
+    //        {
+    //            await _roleManager.CreateAsync(new IdentityRole
+    //            {
+    //                Name = item.ToString()
+    //            });
+    //        }
+    //    }
+    //}
+  
+    [HttpPost("ConfirmUser")]
     public async Task<IActionResult> ConfirmUser(string token, string email)
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null)
         {
-            return BadRequest("Invalid email.");
+            return BadRequest("Invalid email. User not found.");
         }
 
         var result = await _userManager.ConfirmEmailAsync(user, token);
         if (!result.Succeeded)
         {
-            return BadRequest("Email confirmation failed.");
+            return BadRequest("Email confirmation failed. Invalid token or expired link.");
         }
 
         return Ok("Email confirmed successfully.");
     }
 
+   
     [HttpPost("forgetPassword")]
     public async Task<IActionResult> ForgotPassword(ForgetPasswordDto forgotPassword)
     {

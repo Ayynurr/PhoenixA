@@ -60,12 +60,19 @@ public class CommentService : ICommentService
     }
 
 
-    //public async Task<List<CommentGetDto>> GetPostComment(int id)
-    //{
-    //    var loginId = _currentUserService.UserId;
-    //    Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(i=>i.Id == id && i.UserId == loginId) ?? throw new NotfoundException();
+    public async Task<List<CommentGetDto>> GetPostComment(int id)
+    {
+        var loginId = _currentUserService.UserId;
+        Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(i => i.Id == id && i.UserId == loginId) ?? throw new NotfoundException();
+         
+        List<CommentGetDto> commentList = await _dbcontext.Comments
+            .Where(c => c.PostId == id)
+            .Select(c => new CommentGetDto { Content = c.Content, Id = c.Id })
+            .ToListAsync();
 
-    //}
+        return commentList;
+    }
+
 }
 
 

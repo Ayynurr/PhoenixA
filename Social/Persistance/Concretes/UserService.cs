@@ -258,7 +258,7 @@ public class UserService : IUserService
         AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(s => s.UserName == username) ??
            throw new NotfoundException();
         
-        return new UserGetDto() { Name = user.Name,Address= user.Address,Surname = user.Surname,Bio = user.Bio,Gender = user.Gender};
+        return new UserGetDto() { username = user.UserName,Address= user.Address,Bio = user.Bio};
     }
 
     public async Task AddProfileViewAsync(int profileOwnerId, int visitorId)

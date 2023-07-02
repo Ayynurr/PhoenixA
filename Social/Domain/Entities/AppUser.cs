@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 
 namespace Domain.Entities;
 
@@ -14,7 +14,7 @@ public class AppUser : IdentityUser<int>
     public Gender Gender { get; set; }
     public string Address { get; set; }
     public bool IsBlock { get; set; }
-  
+    public DateTime? BlockEndDate { get; set; }
     public ICollection<Post> Posts { get; set; }
     public ICollection<Comment> Comments { get; set; }
     public ICollection<Image> Images { get; set; }

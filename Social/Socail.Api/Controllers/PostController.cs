@@ -2,15 +2,12 @@
 using Application.DTOs;
 using Application.DTOs.ImagePostDto;
 using Application.DTOs.PostDto;
-using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Persistance.DataContext;
-using System;
 
 namespace Socail.Api.Controllers;
 
@@ -88,16 +85,9 @@ public class PostController : ControllerBase
                 ex.Message
             });
         }
-        #region 
-        // Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == id);
-        // if (post == null)
-        // {
-        //     return NotFound();
-        // }
-        //return StatusCode(StatusCodes.Status200OK, post);
-        #endregion
+       
     }
-
+    #region GetImage
     //[HttpGet("GetImages")]
     //public async Task<IActionResult> GetImagesAsync(int postId)
     //{
@@ -176,6 +166,7 @@ public class PostController : ControllerBase
 
     //    return Ok(imageBytesList);
     //}
+    #endregion
 
     [HttpGet("Images/{ImageName}")]
 
@@ -196,31 +187,32 @@ public class PostController : ControllerBase
             contentType = "application/octet-stream";
 
         return File(imageBytes, contentType);
-    }
+    } 
 
+    #region OneImageGosterirSwagger
+    //[HttpGet("post/{postId}/image")]
+    //public async Task<IActionResult> GetStoryImage(int postId)
+    //{
+    //    Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(i => i.Id == postId);
 
-    [HttpGet("post/{postId}/image")]
-    public async Task<IActionResult> GetStoryImage(int postId)
-    {
-        Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(i => i.Id == postId);
+    //    if (post == null)
+    //    {
+    //        return NotFound();
+    //    }
 
-        if (post == null)
-        {
-            return NotFound();
-        }
+    //    if (string.IsNullOrEmpty(post.ImageName))
+    //    {
+    //        return NotFound();
+    //    }
 
-        if (string.IsNullOrEmpty(post.ImageName))
-        {
-            return NotFound();
-        }
+    //    string imagePath = Path.Combine(_hostEnvironment.WebRootPath, "Images", post.ImageName);
 
-        string imagePath = Path.Combine(_hostEnvironment.WebRootPath, "Images", post.ImageName);
+    //    byte[] imageBytes = await System.IO.File.ReadAllBytesAsync(imagePath);
 
-        byte[] imageBytes = await System.IO.File.ReadAllBytesAsync(imagePath);
+    //    return File(imageBytes, "image/jpeg");
 
-        return File(imageBytes, "image/jpeg");
-    }
-
+    //}
+    #endregion
 
     [HttpPut("update/{id}")]
     public async Task<IActionResult> UpdatePost(int id, [FromBody] PostUpdateDto post)
@@ -238,7 +230,7 @@ public class PostController : ControllerBase
 
     }
 
-    [HttpPost("{postId}/UpdateImages")]
+    [HttpPut("{postId}/UpdateImages")]
     public async Task<ActionResult> UpdatePostAsync(int postId, [FromForm] UpdateImageDto images)
     {
         try

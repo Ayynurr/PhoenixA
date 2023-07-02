@@ -35,7 +35,7 @@ public class UserController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    [HttpPost("/api/User/UpdateProfile")]
+    [HttpPut("/api/User/UpdateProfile")]
     public async Task<IActionResult> UpdateProfile([FromBody] ProfileUpdateDto update)
     {
         try
@@ -50,7 +50,7 @@ public class UserController : ControllerBase
         }
 
     }
-    [HttpPost("/api/User/UpdateImage")]
+    [HttpPatch("/api/User/UpdateImage")]
     public async Task<ActionResult> UpdateImage([FromForm] UpdateProfileImage images)
     {
         try
@@ -72,7 +72,7 @@ public class UserController : ControllerBase
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
-  
+    #region First
     //[HttpPost("/api/Users")]
     //public async Task<IActionResult> UserGet()
     //{
@@ -134,8 +134,9 @@ public class UserController : ControllerBase
     //    return Ok(new {profile= publicImage,profileback = publicBack });
     //}
 
+    #endregion
 
-    [HttpPost("{username}")]
+    [HttpGet("{username}")]
     public async Task<IActionResult> UserGetByUsername(string username)
     {
         try
@@ -168,7 +169,7 @@ public class UserController : ControllerBase
     }
    
 
-    [HttpPost("GetUserGroup")]
+    [HttpGet("GetUserGroup")]
     public async Task<IActionResult> GetUserGroups()
     {
         try
@@ -184,7 +185,7 @@ public class UserController : ControllerBase
         }
 
     }
-    [HttpPost("IsUserInGroup")]
+    [HttpGet("IsUserInGroup")]
     public async Task<IActionResult> IsUserInGroup(int groupId)
     {
         try
@@ -223,7 +224,7 @@ public class UserController : ControllerBase
         try
         { 
             await _userService.RemoveUserFromGroup(groupId);
-            return StatusCode(StatusCodes.Status204NoContent, new ResponseDto { Status = "Successs", Message = "I left this group" });
+            return StatusCode(StatusCodes.Status204NoContent);
         }
         catch (Exception ex)
         {
