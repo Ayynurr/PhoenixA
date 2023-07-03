@@ -1,11 +1,9 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
-using Domain.Entities;
 using Domain.Exceptions;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Socail.Api.Controllers;
 
@@ -23,7 +21,7 @@ public class UserController : ControllerBase
         _userService = userService;
         _backgroundEmailService = backgroundEmailService;
     }
-    [HttpGet("send-birthday-messages")]
+    [HttpPost("send-birthday-messages")]
     public async Task<IActionResult> SendBirthdayMessages()
     {
         try

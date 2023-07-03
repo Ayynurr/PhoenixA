@@ -1,6 +1,5 @@
 ﻿using Application.Abstracts;
 using Application.DTOs;
-using Microsoft.EntityFrameworkCore;
 using Persistance.DataContext;
 
 namespace Persistance.Concretes;
@@ -32,6 +31,7 @@ public class SecurityService : ISecurityService
     public async Task<List<UserAdminDto>> GetUsers()
     {
         List<UserAdminDto> userList = await _dbcontext.Users
+            .Where(u=>!u.IsDeleted)
             .Select(u => new UserAdminDto
             {
                 UserId = u.Id,
@@ -42,6 +42,14 @@ public class SecurityService : ISecurityService
             .ToListAsync();
 
         return userList;
+    }
+    public async Task<bool> DeletedUser(int userId,bool deletedStatus)
+    {
+        AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(i => i.Id == userId);
+        if (user is null) return false;
+        user.IsDeleted = deletedStatus;
+        await _dbcontext.SaveChangesAsync();
+        return true;
     }
 
 }

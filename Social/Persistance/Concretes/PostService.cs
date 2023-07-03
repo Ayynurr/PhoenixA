@@ -28,6 +28,10 @@ public class PostService : IPostService
         AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == loginId)
         ?? throw new NotfoundException("User Not Found");
         //dbcontext interceptor
+        if (user.IsBlock)
+        {
+            throw new NotAuthorizedException("User is blocked. Cannot create a post.");
+        }
 
         Post newPost = new()
         {
@@ -140,6 +144,7 @@ public class PostService : IPostService
     {
         Post? newPost = await _dbcontext.Posts.Include(i=>i.Images).FirstOrDefaultAsync(s => s.Id == id) ??
            throw new NotfoundException();
+        
         newPost.Content = post.Content;
         newPost.Id = id;
         await _dbcontext.SaveChangesAsync();

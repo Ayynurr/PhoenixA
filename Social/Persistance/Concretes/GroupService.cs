@@ -59,7 +59,6 @@ public class GroupService : IGroupService
 
         if (group != null && user != null)
         {
-            // Check if the user is already a member of the group with accepted status
             bool isAcceptedMember = await _dbcontext.GroupMemberships
                 .AnyAsync(gm => gm.UserId == userId && gm.GroupId == groupId && gm.Status == Status.Accepted);
 
@@ -128,6 +127,12 @@ public class GroupService : IGroupService
     public async Task<GroupPostDto> CreatePost(int groupId, string content, List<IFormFile> images)
     {
         var loginId = _currentUserService.UserId;
+        AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == loginId)
+        ?? throw new NotfoundException("User Not Found");
+        if (user.IsBlock)
+        {
+            throw new NotAuthorizedException("User is blocked. Cannot create a post.");
+        }
         Group? group = await _dbcontext.Groups.Include(u => u.Posts).FirstOrDefaultAsync(i => i.Id == groupId) ?? throw new ArgumentException("Invalid groupId");
         Post post = new Post
         {
@@ -193,6 +198,7 @@ public class GroupService : IGroupService
     }
     public async Task DeleteGroupPost(int groupId, int postId)
     {
+       
         Group? group = await _dbcontext.Groups.Include(c=>c.Posts).FirstOrDefaultAsync(i=>i.Id==groupId) ?? throw new NotfoundException();
         Post? post = group.Posts.FirstOrDefault(p => p.Id == postId) ?? throw new NotfoundException();
         string path = Path.Combine(_hostEnvironment.WebRootPath, "GroupPostImages");

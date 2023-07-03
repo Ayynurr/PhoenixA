@@ -59,17 +59,19 @@ public class StoryService : IStoryService
         }
         //var currentDate = DateTime.Now.Date;
         //var archiveDate = currentDate.AddDays(-1);
-        var currentDate = DateTime.Now.Date; 
-        var archiveDate = currentDate.AddDays(1); 
 
-        if (newStory.CreatedDate.Date < archiveDate)
-        {
-            newStory.IsArchived = true;
-        }
-        else
-        {
-            newStory.IsArchived = false; 
-        }
+
+        //var currentDate = DateTime.Now.Date; 
+        //var archiveDate = currentDate.AddDays(1); 
+
+        //if (newStory.CreatedDate.Date < archiveDate)
+        //{
+        //    newStory.IsArchived = true;
+        //}
+        //else
+        //{
+        //    newStory.IsArchived = false; 
+        //}
 
 
 

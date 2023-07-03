@@ -90,6 +90,9 @@ public class AuthController : ControllerBase
         new Claim("sub",user.Id.ToString())
        
     };
+        IList<string> roles = await _userManager.GetRolesAsync(user);
+        claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
 
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
@@ -141,40 +144,6 @@ public class AuthController : ControllerBase
     }
 
 
-    //[HttpPost("forgetPassword")]
-    //public async Task<IActionResult> ForgotPassword([FromForm] ForgetPasswordDto forgotPassword)
-    //{
-    //    var user = await _userManager.FindByEmailAsync(forgotPassword.Email);
-    //    if (user is null)
-    //    {
-    //        return BadRequest("User not found.");
-    //    }
-
-    //    string token = await _userManager.GeneratePasswordResetTokenAsync(user);
-    //    string? link = Url.Action("ResetPassword", "Auth", new { email = user.Email, token = token }, HttpContext.Request.Scheme);
-    //    string message = $"Please reset your password by clicking the following link: {link}";
-    //    string subject = "Password Reset";
-    //    _emailService.SendMessage(message, subject, user.Email);
-    //    return Ok();
-    //}
-
-    //[HttpPost("reset-password")]
-    //public async Task<IActionResult> ResetPassword([FromForm] ResetPasswordDto resetPasswordDto)
-    //{
-    //    var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
-    //    if (user is null)
-    //    {
-    //        return NotFound();
-    //    }
-
-    //    var resetPasswordResult = await _userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.NewPassword);
-    //    if (!resetPasswordResult.Succeeded)
-    //    {
-    //        return BadRequest(resetPasswordResult.Errors);
-    //    }
-
-    //    return Ok();
-    //}
     [HttpPost("forgetPassword")]
     public async Task<IActionResult> ForgotPassword([FromForm] ForgetPasswordDto forgotPassword)
     {

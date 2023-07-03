@@ -2,12 +2,12 @@
 using Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 namespace Socail.Api.Controllers;
 
-[ApiController]
+
+//[ApiController]
+[Authorize(AuthenticationSchemes = "Bearer",Roles = "SuperAdmin")]
 [Route("api/[controller]")]
-[Authorize(Roles ="SuperAdmin")]
 //[Area("SuperAdmin")]
 public class SecurityController : ControllerBase
 {
@@ -31,7 +31,7 @@ public class SecurityController : ControllerBase
     }
 
   
-    [HttpPost("BlockUser/{userId}")]
+    [HttpPut("BlockUser/{userId}")]
     public async Task<IActionResult> BlockUser(int userId, bool blockStatus, DateTime? blockEndDate)
     {
         try
@@ -41,6 +41,18 @@ public class SecurityController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
+        }
+    }
+    [HttpPut("DeletedUser/{userId}")]
+    public async Task<IActionResult> DeleteUser(int userId,bool deleteStatus)
+    {
+        try
+        {
+            return StatusCode(StatusCodes.Status200OK,await _securityService.DeletedUser(userId, deleteStatus));
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,new ResponseDto { Status = "Error",Message = ex.Message });
         }
     }
   

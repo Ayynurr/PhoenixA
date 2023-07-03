@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System.Data;
-
 namespace Domain.Entities;
 
 public class AppUser : IdentityUser<int>
 {
-
     public string Name { get; set; } = null!;
     public string Surname { get; set; } = null!;
     public bool IsDeleted { get; set; }
-    public DateTime BirthDate { get; set; } //backround service 
+    public DateTime? BirthDate { get; set; } //backround service 
     public string? Bio { get; set; }
     public Gender Gender { get; set; }
     public string Address { get; set; }

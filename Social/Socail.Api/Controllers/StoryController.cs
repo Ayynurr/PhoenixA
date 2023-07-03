@@ -20,14 +20,14 @@ public class StoryController : ControllerBase
     readonly ICurrentUserService _currentUserService;
     readonly AppDbContext _dbcontext;
     readonly IWebHostEnvironment _hostEnvironment;
-    readonly IArchiveJob _archiveJob;
-    public StoryController(IStoryService storyService, ICurrentUserService currentUserService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, IArchiveJob archiveJob)
+  
+    public StoryController(IStoryService storyService, ICurrentUserService currentUserService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment)
     {
         _storyService = storyService;
         _currentUserService = currentUserService;
         _dbcontext = dbcontext;
         _hostEnvironment = hostEnvironment;
-        _archiveJob = archiveJob;
+        
     }
 
     [HttpPost("video")]

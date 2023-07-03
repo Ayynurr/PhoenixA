@@ -34,14 +34,19 @@ public class CommentService : ICommentService
         var loginId = _currentUserService.UserId;
         AppUser user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == loginId)
             ?? throw new NotfoundException("User Not Found");
+        if (user.IsBlock)
+        {
+            throw new NotAuthorizedException("User is blocked. Cannot create a comment.");
+        }
 
         Comment newComment = new Comment
         {
             Content = commentDto.Content,
             UserId = (int)loginId,
-            CreatedDate = DateTime.UtcNow,
+            CreatedDate = DateTime.Now,
             CreatedBy = user.Name,
-            Post = post
+            Post = post,
+         
         };
 
         if (commentDto.ReplyCommentId.HasValue)

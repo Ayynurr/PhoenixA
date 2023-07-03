@@ -10,13 +10,16 @@ using Microsoft.OpenApi.Models;
 using Persistance;
 using Persistance.Concretes;
 using Persistance.DataContext;
+using Socail.Api.BackraoundServices;
+//using Socail.Api.BackraoundServices;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+builder.Services.AddScoped<UserManager<AppUser>>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
@@ -28,7 +31,6 @@ builder.Services.AddIdentity<AppUser, Role>(opt =>
     opt.User.RequireUniqueEmail = true;
     opt.Password.RequireNonAlphanumeric = false;
 }).AddDefaultTokenProviders().AddEntityFrameworkStores<AppDbContext>();
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
 {
     opt.TokenValidationParameters = new TokenValidationParameters()
@@ -36,7 +38,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidAudience = builder.Configuration["JWT:audience"],
         ValidIssuer = builder.Configuration["JWT:issuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecurityKey"])),
-        ClockSkew = TimeSpan.FromSeconds(0)
+        ClockSkew = TimeSpan.FromSeconds(0),
     };
 });
 
@@ -52,9 +54,9 @@ builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<IGroupService,GroupService>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
 builder.Services.AddScoped<IBackraundEmailService, BackraundEmailService>();
-builder.Services.AddScoped<IArchiveService, ArchiveService>();
-builder.Services.AddScoped<IArchiveJob, ArchiveJob>();
-
+//builder.Services.AddScoped<IArchiveService, ArchiveService>();
+//builder.Services.AddScoped<IArchiveJob, ArchiveJob>();
+builder.Services.AddHostedService<DateTimeLogWriter>();
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo()
@@ -85,9 +87,26 @@ builder.Services.AddSwaggerGen(opt =>
     }
     });
 });
-
 var app = builder.Build();
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
 
+//    try
+//    {
+//        var dateTimeLogWriter = services.GetRequiredService<DateTimeLogWriter>();
+//        await dateTimeLogWriter.StartAsync(CancellationToken.None);
+
+//        // Diğer işlemler burada gerçekleştirilebilir
+
+//        await app.RunAsync();
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine("Uygulama başlatılırken bir hata oluştu.");
+//        Console.WriteLine(ex.Message);
+//    }
+//}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

@@ -14,7 +14,7 @@ public class UserService : IUserService
     readonly IWebHostEnvironment _hostEvnironment;
     readonly UserManager<AppUser> _userManager;
 
-    public UserService(AppDbContext dbcontext, ICurrentUserService currentUserService, IWebHostEnvironment hostEvnironment, UserManager<AppUser> userManager )
+    public UserService(AppDbContext dbcontext, ICurrentUserService currentUserService, IWebHostEnvironment hostEvnironment, UserManager<AppUser> userManager)
     {
         _dbcontext = dbcontext;
         _currentUserService = currentUserService;
@@ -26,14 +26,14 @@ public class UserService : IUserService
         DateTime today = DateTime.Today;
 
         List<AppUser> usersWithBirthdayToday = _userManager.Users
-            .Where(u => u.BirthDate.Day == today.Day && u.BirthDate.Month == today.Month)
+            .Where(u => u.BirthDate.HasValue && u.BirthDate.Value.Day == today.Day && u.BirthDate.Value.Month == today.Month)
             .ToList();
 
         List<AppUserDto> usersWithBirthdayTodayDto = usersWithBirthdayToday.Select(u => new AppUserDto
         {
             Name = u.Name,
             Email = u.Email,
-            Birthdate = u.BirthDate
+            Birthdate = u.BirthDate.Value
         }).ToList();
 
         return usersWithBirthdayTodayDto;
@@ -43,7 +43,7 @@ public class UserService : IUserService
     public async Task BackCreateAsync(ProfileCreateDto profilCreate)
     {
         var loginId = _currentUserService.UserId;
-        AppUser? user = await _dbcontext.Users.Include(c=>c.UserImages).FirstOrDefaultAsync(u => u.Id == loginId)
+        AppUser? user = await _dbcontext.Users.Include(c => c.UserImages).FirstOrDefaultAsync(u => u.Id == loginId)
         ?? throw new NotfoundException();
         UserImage image = new()
         {
@@ -52,7 +52,7 @@ public class UserService : IUserService
             CreatedDate = DateTime.Now,
         };
 
-        
+
         if (profilCreate.ImageFile.CheckFileSize(2048)) throw new FileSizeException();
 
         if (!profilCreate.ImageFile.CheckFileType("image/")) throw new FileTypeException();
@@ -73,7 +73,7 @@ public class UserService : IUserService
         var groups = await _dbcontext.GroupMemberships
             .Where(gm => gm.UserId == loginId && gm.Status == Status.Accepted)
             .Select(gm => gm.Group)
-            .ToListAsync() ?? throw new NotfoundException() ;   
+            .ToListAsync() ?? throw new NotfoundException();
 
         var groupDtos = groups.Select(g => new GetGroupDto
         {
@@ -86,12 +86,12 @@ public class UserService : IUserService
     public async Task InviteUserToGroup(int groupId)
     {
         var loginId = _currentUserService.UserId;
-        bool membershipExists =  _dbcontext.GroupMemberships
+        bool membershipExists = _dbcontext.GroupMemberships
             .Any(gm => gm.UserId == loginId && gm.GroupId == groupId);
 
         if (!membershipExists)
         {
-            GroupMembership membership = new ()
+            GroupMembership membership = new()
             {
                 UserId = (int)loginId,
                 GroupId = groupId,
@@ -102,7 +102,7 @@ public class UserService : IUserService
             _dbcontext.SaveChanges();
         }
     }
-    public async Task RemoveUserFromGroup( int groupId)
+    public async Task RemoveUserFromGroup(int groupId)
     {
         var loginId = _currentUserService.UserId;
         GroupMembership? membership = await _dbcontext.GroupMemberships
@@ -114,7 +114,7 @@ public class UserService : IUserService
             await _dbcontext.SaveChangesAsync();
         }
     }
-    public async Task RespondToGroupInvitation( int groupId, bool acceptInvitation)
+    public async Task RespondToGroupInvitation(int groupId, bool acceptInvitation)
     {
         var loginId = _currentUserService.UserId;
         GroupMembership? membership = await _dbcontext.GroupMemberships
@@ -131,9 +131,9 @@ public class UserService : IUserService
                 membership.Status = Status.Rejected;
             }
 
-           await _dbcontext.SaveChangesAsync();
+            await _dbcontext.SaveChangesAsync();
         }
-    
+
     }
 
     public async Task<bool> IsUserInGroup(int groupId)
@@ -157,7 +157,7 @@ public class UserService : IUserService
             IsProfile = true,
             CreatedDate = DateTime.Now,
         };
-       
+
 
         if (profileCreate.ImageFile.CheckFileSize(2048)) throw new FileSizeException();
 
@@ -256,7 +256,7 @@ public class UserService : IUserService
 
         user.UserImages.Remove(imageToDelete);
 
-        
+
         if (imageToDelete.IsProfile)
         {
             var newProfileImage = user.UserImages.FirstOrDefault(image => image.IsBack);
@@ -278,8 +278,8 @@ public class UserService : IUserService
     {
         AppUser? user = await _dbcontext.Users.FirstOrDefaultAsync(s => s.UserName == username) ??
            throw new NotfoundException();
-        
-        return new UserGetDto() { username = user.UserName,Address= user.Address,Bio = user.Bio};
+
+        return new UserGetDto() { username = user.UserName, Address = user.Address, Bio = user.Bio };
     }
 
     public async Task AddProfileViewAsync(int profileOwnerId, int visitorId)
