@@ -11,7 +11,6 @@ using Persistance;
 using Persistance.Concretes;
 using Persistance.DataContext;
 using Socail.Api.BackraoundServices;
-//using Socail.Api.BackraoundServices;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,10 +52,10 @@ builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IStoryService, StoryService>();  
 builder.Services.AddScoped<IGroupService,GroupService>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
-builder.Services.AddScoped<IBackraundEmailService, BackraundEmailService>();
-//builder.Services.AddScoped<IArchiveService, ArchiveService>();
-//builder.Services.AddScoped<IArchiveJob, ArchiveJob>();
+builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IJwtService,JwtService>();
 builder.Services.AddHostedService<DateTimeLogWriter>();
+builder.Services.AddScoped<IAzureFileService,AzureFileService>();
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo()
@@ -88,26 +87,6 @@ builder.Services.AddSwaggerGen(opt =>
     });
 });
 var app = builder.Build();
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-
-//    try
-//    {
-//        var dateTimeLogWriter = services.GetRequiredService<DateTimeLogWriter>();
-//        await dateTimeLogWriter.StartAsync(CancellationToken.None);
-
-//        // Diğer işlemler burada gerçekleştirilebilir
-
-//        await app.RunAsync();
-//    }
-//    catch (Exception ex)
-//    {
-//        Console.WriteLine("Uygulama başlatılırken bir hata oluştu.");
-//        Console.WriteLine(ex.Message);
-//    }
-//}
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

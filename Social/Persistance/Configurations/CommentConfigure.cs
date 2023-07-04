@@ -20,5 +20,6 @@ public class CommentConfigure : IEntityTypeConfiguration<Comment>
             .HasForeignKey(c => c.TopCommentId)
             .OnDelete(DeleteBehavior.Restrict);
 
+
     }
 }

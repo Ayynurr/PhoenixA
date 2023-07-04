@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Hosting;
 using Persistance.Extentions;
 using Persistance.DataContext;
 using Microsoft.AspNetCore.Http;
+using Application.FileService;
+using Infrastructure.Services;
 
 namespace Persistance;
 
@@ -13,12 +15,14 @@ public class GroupService : IGroupService
     readonly AppDbContext _dbcontext;
     readonly ICurrentUserService _currentUserService;
     readonly IWebHostEnvironment _hostEnvironment;
+    readonly IAzureFileService _azureService;
 
-    public GroupService(AppDbContext dbcontext, ICurrentUserService currentUserService, IWebHostEnvironment hostEnvironment)
+    public GroupService(AppDbContext dbcontext, ICurrentUserService currentUserService, IWebHostEnvironment hostEnvironment, IAzureFileService azureService )
     {
         _dbcontext = dbcontext;
         _currentUserService = currentUserService;
         _hostEnvironment = hostEnvironment;
+        _azureService = azureService;
     }
 
     public async Task AcceptUserInvitation(int userId, int groupId)
@@ -158,8 +162,15 @@ public class GroupService : IGroupService
                     throw new FileTypeException();
                 if (!file.CheckFileType("image/"))
                     throw new FileSizeException();
-                string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "GroupPostImages");
-                post.ImageName = newFileName;
+                FileUploadResult fileUploadResult = await _azureService.UploadFileAsync("groupimages", file);
+
+                Image newImage = new Image
+                {
+                    ImgName = fileUploadResult.filePath,
+                    PostId = post.Id,
+                    Path = $"https://socailapi.blob.core.windows.net/{fileUploadResult.filePath}",
+                    UpdatedDate = DateTime.Now
+                };
             }
         }
 
@@ -179,13 +190,25 @@ public class GroupService : IGroupService
                 if (!file.CheckFileType("image/"))
                     throw new FileSizeException();
                 string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "GroupPostImages");
-                post.ImageName = newFileName;
+
+                // Upload the file to Azure Blob Storage
+                FileUploadResult fileUploadResult = await _azureService.UploadFileAsync("groupimages", file);
+
+                Image newImage = new Image
+                {
+                    ImgName = newFileName,
+                    PostId = updateDto.PostId,
+                    Path = $"https://socailapi.blob.core.windows.net/{fileUploadResult.filePath}",
+                    UpdatedDate = DateTime.Now
+                };
+                post.Images.Add(newImage);
             }
         }
+
         post.Content = updateDto.Content;
         await _dbcontext.SaveChangesAsync();
 
-        GroupPostDto postDto = new ()
+        GroupPostDto postDto = new GroupPostDto
         {
             PostId = post.Id,
             GroupId = (int)post.GroupId,

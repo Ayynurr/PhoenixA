@@ -3,6 +3,7 @@ using Application.DTOs;
 using Application.DTOs.ImagePostDto;
 using Application.DTOs.PostDto;
 using Domain.Exceptions;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
@@ -22,13 +23,15 @@ public class PostController : ControllerBase
     readonly IWebHostEnvironment _hostEnvironment;
     readonly ILikeService _likeService;
     readonly ICurrentUserService _currentUserService;
-    public PostController(IPostService postService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, ILikeService likeService, ICurrentUserService currentUserService)
+    readonly IAzureFileService _azureService;
+    public PostController(IPostService postService, AppDbContext dbcontext, IWebHostEnvironment hostEnvironment, ILikeService likeService, ICurrentUserService currentUserService, IAzureFileService azureService )
     {
         _postService = postService;
         _dbcontext = dbcontext;
         _hostEnvironment = hostEnvironment;
         _likeService = likeService;
         _currentUserService = currentUserService;
+        _azureService = azureService;
     }
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] PostCreateDto post)

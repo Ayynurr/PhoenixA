@@ -10,6 +10,7 @@ public static class EntityTypeExtentions
     {
         builder.Property(c => c.IsDeleted).HasDefaultValue(false);
         builder.Property(c=>c.IsActived).HasDefaultValue(true);
+        builder.HasQueryFilter(c => c.IsDeleted == false);
     }
     public static void ConfigureAuditable<TEntity>(this EntityTypeBuilder<TEntity> builder)
       where TEntity : BaseAuditable

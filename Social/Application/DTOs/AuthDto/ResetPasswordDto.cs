@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.DTOs.CommentDto.AuthDto;
+namespace Application.DTOs.AuthDto;
 
 public class ResetPasswordDto
 {
@@ -10,7 +10,7 @@ public class ResetPasswordDto
     //public string Token { get; set; }
     [DataType(DataType.Password)]
     public string NewPassword { get; set; }
-    [DataType(DataType.Password),Compare(nameof(NewPassword))]
+    [DataType(DataType.Password), Compare(nameof(NewPassword))]
     public string ConfirmPassword { get; set; }
 
 }

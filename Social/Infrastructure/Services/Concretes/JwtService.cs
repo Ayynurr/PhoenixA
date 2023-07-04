@@ -15,7 +15,6 @@ public class JwtService : IJwtService
     {
         _configure = configure;
     }
-
     public string GetJwt(AppUser user, IList<string> roles)
     {
         List<Claim> claims = new List<Claim>
@@ -23,8 +22,6 @@ public class JwtService : IJwtService
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email),
-                //new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                
             };
 
         claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));

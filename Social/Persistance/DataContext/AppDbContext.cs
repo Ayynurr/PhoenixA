@@ -1,6 +1,4 @@
 ﻿using Domain;
-using Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 namespace Persistance.DataContext;
@@ -23,9 +21,9 @@ public class AppDbContext : IdentityDbContext<AppUser,Role,int>
     public DbSet<ProfileView> ProfileViews { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
-     
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-       
+        builder.Entity<AppUser>().HasQueryFilter(u => u.IsDeleted == false);
+        builder.Entity<Group>().HasQueryFilter(u => u.IsDeleted == false);
     }
 }

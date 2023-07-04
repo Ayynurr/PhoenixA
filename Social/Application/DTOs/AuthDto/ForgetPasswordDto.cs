@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 
-namespace Application.DTOs.CommentDto.AuthDto;
+namespace Application.DTOs.AuthDto;
 
 public class ForgetPasswordDto
 {

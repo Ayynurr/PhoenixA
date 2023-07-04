@@ -9,5 +9,6 @@ namespace Application.DTOs;
 public class GetGroupDto
 {
     public string Name { get; set; }
- 
+    public List<AppUserDto> GroupMembers { get; set; }
+
 }

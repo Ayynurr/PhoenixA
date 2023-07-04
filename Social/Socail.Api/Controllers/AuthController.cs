@@ -1,12 +1,8 @@
-﻿using Application.DTOs.CommentDto.AuthDto;
+﻿using Application.DTOs.AuthDto;
 using Domain.Entities;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace Socail.Api.Controllers;
 [Route("api/[controller]")]
@@ -14,15 +10,13 @@ namespace Socail.Api.Controllers;
 public class AuthController : ControllerBase
 {
     readonly UserManager<AppUser> _userManager;
-    readonly IConfiguration _configuration;
-    readonly RoleManager<Role> _roleManager;
     readonly IEmailService _emailService;
-    public AuthController(UserManager<AppUser> userManager, IConfiguration confifuration, RoleManager<Role> roleManager, IEmailService emailService)
+    readonly IJwtService _jwtService;
+    public AuthController(UserManager<AppUser> userManager, IEmailService emailService, IJwtService jwtService)
     {
         _userManager = userManager;
-        _configuration = confifuration;
-        _roleManager = roleManager;
         _emailService = emailService;
+        _jwtService = jwtService;
     }
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto register)
@@ -52,9 +46,8 @@ public class AuthController : ControllerBase
         //}
 
         string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        string? link = Url.Action("ConfirmUser", "Auth", new { email = user.Email, token = token }, HttpContext.Request.Scheme);
-
-        _emailService.SendMessage(token, "Confirm", user.Email);
+        var link = Url.Action("ConfirmUser", "Auth", new { email = user.Email, token = token },HttpContext.Request.Scheme);
+        _emailService.SendMessage(token,"Confirm", user.Email);
         return Ok(new
         {
             user.Name,
@@ -76,39 +69,14 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { Message = "Username or password incorrect!!!" });
         }
-
+        var roles =  _userManager.GetRolesAsync(user).Result;
+        var jwt =  _jwtService.GetJwt(user,roles);
        
-        var jwtSettings = _configuration.GetSection("JWT");
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecurityKey"]));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-    
-        var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Email, user.Email),
-        new Claim("sub",user.Id.ToString())
-       
-    };
-        IList<string> roles = await _userManager.GetRolesAsync(user);
-        claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
-
-
-        var token = new JwtSecurityToken(
-            issuer: jwtSettings["Issuer"],
-            audience: jwtSettings["Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddDays(7), 
-            signingCredentials: credentials
-        );
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var encodedToken = tokenHandler.WriteToken(token);
-
-        return Ok(new { Token = encodedToken });
+        return Ok(new { Token = jwt });
     }
 
-    #region Roles
+  
     //[HttpPost("createRoles")]
     //public async Task CreateRoles()
     //{
@@ -123,7 +91,7 @@ public class AuthController : ControllerBase
     //        }
     //    }
     //}
-    #endregion
+  
 
     [HttpPost("ConfirmUser")]
     public async Task<IActionResult> ConfirmUser(string token, string email)

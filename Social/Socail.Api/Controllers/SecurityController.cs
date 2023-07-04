@@ -5,10 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace Socail.Api.Controllers;
 
 
-//[ApiController]
 [Authorize(AuthenticationSchemes = "Bearer",Roles = "SuperAdmin")]
 [Route("api/[controller]")]
-//[Area("SuperAdmin")]
 public class SecurityController : ControllerBase
 {
     readonly ISecurityService _securityService;
@@ -55,5 +53,53 @@ public class SecurityController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError,new ResponseDto { Status = "Error",Message = ex.Message });
         }
     }
-  
+    [HttpGet("GetGroups")]
+    public async Task<IActionResult> GetGroups()
+    {
+        try
+        {
+            return StatusCode(StatusCodes.Status200OK, await _securityService.GetGroups());
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
+        }
+    }
+    [HttpPut("DeleteGroup/{groupId}")]
+    public async Task<IActionResult> DeleteGroup(int groupId)
+    {
+        try
+        {
+            return StatusCode(StatusCodes.Status200OK, await _securityService.DeleteGroup(groupId));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
+        }
+    }
+    [HttpGet("GetPost")]
+    public async Task<IActionResult> GetPosts()
+    {
+        try 
+        {
+            return StatusCode(StatusCodes.Status200OK, await _securityService.GetPosts());
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
+        }
+    }
+    [HttpPut("DeletePost/{postId}")]
+    public async Task<IActionResult> DeletePost(int postId)
+    {
+        try
+        {
+            return StatusCode(StatusCodes.Status200OK, await _securityService.DeletePost(postId));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDto { Status = "Error", Message = ex.Message });
+        }
+    }
+
 }

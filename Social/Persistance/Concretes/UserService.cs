@@ -21,24 +21,7 @@ public class UserService : IUserService
         _hostEvnironment = hostEvnironment;
         _userManager = userManager;
     }
-    public List<AppUserDto> GetUsersWithBirthdayToday()
-    {
-        DateTime today = DateTime.Today;
-
-        List<AppUser> usersWithBirthdayToday = _userManager.Users
-            .Where(u => u.BirthDate.HasValue && u.BirthDate.Value.Day == today.Day && u.BirthDate.Value.Month == today.Month)
-            .ToList();
-
-        List<AppUserDto> usersWithBirthdayTodayDto = usersWithBirthdayToday.Select(u => new AppUserDto
-        {
-            Name = u.Name,
-            Email = u.Email,
-            Birthdate = u.BirthDate.Value
-        }).ToList();
-
-        return usersWithBirthdayTodayDto;
-    }
-
+  
 
     public async Task BackCreateAsync(ProfileCreateDto profilCreate)
     {

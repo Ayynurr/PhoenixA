@@ -13,33 +13,12 @@ namespace Socail.Api.Controllers;
 public class UserController : ControllerBase
 {
     readonly IUserService _userService;
-     readonly IBackraundEmailService _backgroundEmailService;
+   
 
-
-    public UserController(IUserService userService, IBackraundEmailService backgroundEmailService)
+    public UserController(IUserService userService)
     {
         _userService = userService;
-        _backgroundEmailService = backgroundEmailService;
     }
-    [HttpPost("send-birthday-messages")]
-    public async Task<IActionResult> SendBirthdayMessages()
-    {
-        try
-        {
-            List<AppUserDto> usersWithBirthdayToday = _userService.GetUsersWithBirthdayToday();
-
-            string message = "Happy birthday!";
-
-            await _backgroundEmailService.SendBirthdayMessagesAsync(usersWithBirthdayToday.Select(u => u.Email).ToList(), message);
-
-            return Ok("Birthday messages sent successfully");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error sending birthday messages: {ex.Message}");
-        }
-    }
-   
 
 
     [HttpPost("/api/User/CreateProfile")]

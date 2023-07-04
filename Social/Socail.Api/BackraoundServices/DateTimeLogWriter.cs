@@ -70,7 +70,7 @@ public class DateTimeLogWriter : IHostedService
                     scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
                 var currentDate = DateTime.Now.Date;
-                var archiveDate = currentDate.AddDays(-1); // 1 gün önceki tarih
+                var archiveDate = currentDate.AddDays(-1); 
 
                 foreach (var user in await scopedProcessingService.Users.Include(i => i.Stories).ToListAsync())
                 {

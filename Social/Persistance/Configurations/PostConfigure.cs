@@ -14,5 +14,6 @@ public class PostConfigure : IEntityTypeConfiguration<Post>
         builder.ConfigureBaseEntity();
         builder.Property(l => l.IsActived).HasDefaultValue(true);
         builder.Property(i => i.IsDeleted).HasDefaultValue(false);
+
     }
 }

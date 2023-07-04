@@ -1,7 +1,7 @@
 ﻿using Domain.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace Application.DTOs.CommentDto.AuthDto;
+namespace Application.DTOs.AuthDto;
 
 public class RegisterDto
 {
@@ -11,7 +11,9 @@ public class RegisterDto
     public string Address { get; set; } = null!;
     public string Email { get; set; } = null!;
     public DateTime Birthday { get; set; }
+    [DataType(DataType.Password)]
     public string Password { get; set; } = null!;
+    [DataType(DataType.Password), Compare(nameof(Password))]
     public string ConfirmPassword { get; set; } = null!;
     [EnumDataType(typeof(Gender))]
     public Gender Gender { get; set; }

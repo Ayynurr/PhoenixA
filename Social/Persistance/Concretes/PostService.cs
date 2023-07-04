@@ -2,11 +2,16 @@
 using Application.DTOs;
 using Application.DTOs.ImagePostDto;
 using Application.DTOs.PostDto;
+using Application.FileService;
 using Domain.Entities;
 using Domain.Exceptions;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Persistance.DataContext;
 using Persistance.Extentions;
+using static System.Net.Mime.MediaTypeNames;
+using Image = Domain.Entities.Image;
 
 namespace Persistance.Concretes;
 public class PostService : IPostService
@@ -14,11 +19,13 @@ public class PostService : IPostService
     private readonly AppDbContext _dbcontext;
     public readonly ICurrentUserService _currentUserService;
     private readonly IWebHostEnvironment _hostEnvironment;
-    public PostService(AppDbContext dbcontext, ICurrentUserService userService, IWebHostEnvironment hostEnvironment)
+    readonly IAzureFileService _azureService;
+    public PostService(AppDbContext dbcontext, ICurrentUserService userService, IWebHostEnvironment hostEnvironment, IAzureFileService azureService = null)
     {
         _dbcontext = dbcontext;
         _currentUserService = userService;
         _hostEnvironment = hostEnvironment;
+        _azureService = azureService;
     }
 
 
@@ -47,12 +54,12 @@ public class PostService : IPostService
                     throw new FileTypeException();
                 if (!file.CheckFileType("image/"))
                     throw new FileSizeException();
-                string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "Images");
-              
+                //string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "Images");
+                FileUploadResult fileUploadResult = await _azureService.UploadFileAsync("postimages", file);
                 //newPost.ImageName = newFileName;
-                newPost.Images.Add(new Image { Path = Path.Combine(_hostEnvironment.WebRootPath, "Images"), ImgName=newFileName});
+                newPost.Images.Add(new Image { Path = Path.Combine(_hostEnvironment.WebRootPath, "Images"), ImgName = fileUploadResult.fileName });
 
-               newPost.ImageName = newFileName;
+                //newPost.ImageName = fileUploadResult.fileName;
             }
             #region 
             //{
@@ -84,10 +91,10 @@ public class PostService : IPostService
             //    }
             #endregion
         }
-            List<ImageGetDto> imageDtos = newPost.Images.Select(i => new ImageGetDto()
-            {
-                Url = $"https://localhost:7046/api/Hotel/Images/{i.ImgName}"
-            }).ToList();
+        List<ImageGetDto> imageDtos = newPost.Images.Select(i => new ImageGetDto()
+        {
+            Url = $"https://socialapi.blob.core.windows.net/postimages/{i.ImgName}"
+        }).ToList();
 
         _dbcontext.Posts.Add(newPost);
         await _dbcontext.SaveChangesAsync();
@@ -102,11 +109,11 @@ public class PostService : IPostService
 
         List<ImageGetDto> imageDtos = post.Images.Select(i => new ImageGetDto()
         {
-          
-            Url = $"https://localhost:7046/api/Hotel/Images/{i.ImgName}"
+
+            Url = $"https://socialapi.blob.core.windows.net/postimages/{i.ImgName}"
         }).ToList();
 
-        
+
         PostGetDto postGetDto = new PostGetDto()
         {
             Content = post.Content,
@@ -114,12 +121,12 @@ public class PostService : IPostService
             Images = imageDtos
         };
 
-        
+
         return postGetDto;
     }
     public async Task<List<PostGetDto>> GetAllAsync()
     {
-        var posts = await _dbcontext.Posts.Include(i=>i.Images)
+        var posts = await _dbcontext.Posts.Include(i => i.Images)
             .Select(s => new PostGetDto { Id = s.Id, Content = s.Content })
             .ToListAsync();
 
@@ -129,8 +136,8 @@ public class PostService : IPostService
                 .Where(i => i.PostId == post.Id)
                 .Select(i => new ImageGetDto
                 {
-                 
-                    Url = $"https://localhost:7046/api/Hotel/Images/{i.ImgName}"
+
+                    Url = $"https://socialapi.blob.core.windows.net/postimages/{i.ImgName}"
                 })
                 .ToListAsync();
 
@@ -142,9 +149,9 @@ public class PostService : IPostService
 
     public async Task<PostGetDto> UpdateAsync(PostUpdateDto post, int id)
     {
-        Post? newPost = await _dbcontext.Posts.Include(i=>i.Images).FirstOrDefaultAsync(s => s.Id == id) ??
+        Post? newPost = await _dbcontext.Posts.Include(i => i.Images).FirstOrDefaultAsync(s => s.Id == id) ??
            throw new NotfoundException();
-        
+
         newPost.Content = post.Content;
         newPost.Id = id;
         await _dbcontext.SaveChangesAsync();
@@ -159,7 +166,6 @@ public class PostService : IPostService
     {
         Post? newPost = await _dbcontext.Posts.FirstOrDefaultAsync(s => s.Id == postId) ??
           throw new NotfoundException();
-        newPost.Images ??= new List<Image>();
         List<ImageGetDto> updateImages = new();
 
         foreach (var file in updateImage.Images)
@@ -168,19 +174,21 @@ public class PostService : IPostService
                 throw new FileTypeException();
             if (!file.CheckFileType("image/"))
                 throw new FileSizeException();
-            string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "Images");
+            //string newFileName = await file.FileUploadAsync(_hostEnvironment.WebRootPath, "Images");
+            FileUploadResult fileUploadResult = await _azureService.UploadFileAsync("postimages", file);
+
             Image newImage = new()
             {
-                ImgName = newFileName,
+                ImgName = fileUploadResult.fileName,
                 PostId = postId,
-                Path = Path.Combine(_hostEnvironment.WebRootPath, "Images"),
+                Path = $"https://socailapi.blob.core.windows.net/{fileUploadResult.filePath}",
                 UpdatedDate = DateTime.Now
             };
             newPost.Images.Add(newImage);
             updateImages.Add(new ImageGetDto
             {
-               
-                Url = $"https://localhost:7275/api/Post/Images/{newPost.ImageName}"
+
+                Url = $"https://socailapi.blob.core.windows.net/{fileUploadResult.filePath}"
             });
         }
         await _dbcontext.SaveChangesAsync();
@@ -191,19 +199,15 @@ public class PostService : IPostService
 
     public async Task DeleteAsync(int id)
     {
-
         Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(i => i.Id == id) ?? throw new NotfoundException();
-        string path = Path.Combine(_hostEnvironment.WebRootPath,"Images");
-        if (path != null)
+
+        foreach (var image in post.Images)
         {
-            if (System.IO.File.Exists(path))
-            {
-                System.IO.File.Delete(path);
-            }
+            string blobName = image.Path.Substring(image.Path.LastIndexOf('/') + 1);
         }
+
         _dbcontext.Posts.Remove(post);
         await _dbcontext.SaveChangesAsync();
-
     }
 }
 
